@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collaborator Hub - Gestão de Colaboradores</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #EE7752;
+            --primary-dark: #FF6B35;
+            --background: #FFFFFF;
+            --foreground: #333333;
+            --secondary: #F5F5F5;
+            --muted: #999999;
+            --border: #CCCCCC;
+            --success: #27AE60;
+            --error: #E74C3C;
+            --warning: #F39C12;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--background);
+            color: var(--foreground);
+            line-height: 1.6;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, #FFFFFF 0%, #F5F5F5 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .header-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .logo-text h1 {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--foreground);
+        }
+
+        .logo-text p {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .search-container {
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background-color: var(--background);
+            color: var(--foreground);
+            font-size: 14px;
+        }
+
+        .search-container input::placeholder {
+            color: var(--muted);
+        }
+
+        .search-container input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(238, 119, 82, 0.1);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Analytics Grid */
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .analytics-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            transition: box-shadow 0.2s;
+        }
+
+        .analytics-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .analytics-card.blue {
+            border-color: #E3F2FD;
+            background: linear-gradient(135deg, #F0F7FF 0%, #FFFFFF 100%);
+        }
+
+        .analytics-card.green {
+            border-color: #E8F5E9;
+            background: linear-gradient(135deg, #F1F8F4 0%, #FFFFFF 100%);
+        }
+
+        .analytics-card.red {
+            border-color: #FFEBEE;
+            background: linear-gradient(135deg, #FFF5F5 0%, #FFFFFF 100%);
+        }
+
+        .analytics-card.orange {
+            border-color: #FFF3E0;
+            background: linear-gradient(135deg, #FFF8F0 0%, #FFFFFF 100%);
+        }
+
+        .analytics-card-content {
+            flex: 1;
+        }
+
+        .analytics-card-label {
+            font-size: 13px;
+            color: var(--muted);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .analytics-card-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--foreground);
+            margin-bottom: 0.25rem;
+        }
+
+        .analytics-card-subtitle {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .analytics-card-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .analytics-card.blue .analytics-card-icon {
+            background-color: #E3F2FD;
+            color: #1976D2;
+        }
+
+        .analytics-card.green .analytics-card-icon {
+            background-color: #E8F5E9;
+            color: #388E3C;
+        }
+
+        .analytics-card.red .analytics-card-icon {
+            background-color: #FFEBEE;
+            color: #D32F2F;
+        }
+
+        .analytics-card.orange .analytics-card-icon {
+            background-color: #FFF3E0;
+            color: #F57C00;
+        }
+
+        /* Content Grid */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 2rem;
+        }
+
+        /* Filters */
+        .filters-panel {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+
+        .filters-header {
+            border-bottom: 1px solid var(--border);
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .filters-header h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--foreground);
+        }
+
+        .clear-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .clear-btn:hover {
+            background-color: rgba(238, 119, 82, 0.1);
+        }
+
+        .filters-content {
+            padding: 1rem;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .filter-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .filter-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--foreground);
+            margin-bottom: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .filter-title:hover {
+            background-color: var(--secondary);
+        }
+
+        .filter-title.collapsed + .filter-options {
+            display: none;
+        }
+
+        .filter-options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-left: 0.5rem;
+        }
+
+        .filter-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+
+        .filter-option input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        .filter-option label {
+            font-size: 13px;
+            color: var(--foreground);
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .filters-footer {
+            border-top: 1px solid var(--border);
+            padding: 0.75rem 1rem;
+            background-color: rgba(0,0,0,0.02);
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        /* Table */
+        .table-container {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        thead {
+            background-color: var(--secondary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--foreground);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--foreground);
+        }
+
+        tbody tr:hover {
+            background-color: var(--secondary);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-align: center;
+            min-width: 35px;
+        }
+
+        .status-badge.P {
+            background-color: #E8F5E9;
+            color: #27AE60;
+        }
+
+        .status-badge.FO {
+            background-color: #FFEBEE;
+            color: #E74C3C;
+        }
+
+        .status-badge.DSR {
+            background-color: #FFF3E0;
+            color: #F57C00;
+        }
+
+        .status-badge.AM {
+            background-color: #E3F2FD;
+            color: #1976D2;
+        }
+
+        .status-badge.DF {
+            background-color: #F3E5F5;
+            color: #7B1FA2;
+        }
+
+        .status-badge.DV {
+            background-color: #FCE4EC;
+            color: #C2185B;
+        }
+
+        .status-badge.FE {
+            background-color: #E0F2F1;
+            color: #00897B;
+        }
+
+        .status-badge.AL {
+            background-color: #ECEFF1;
+            color: #455A64;
+        }
+
+        .status-badge.F {
+            background-color: #FFCCBC;
+            color: #D84315;
+        }
+
+        .status-badge.BH {
+            background-color: #E1BEE7;
+            color: #6A1B9A;
+        }
+
+        .status-badge.DP {
+            background-color: #B2DFDB;
+            color: #00695C;
+        }
+
+        .status-badge.NC {
+            background-color: #EEEEEE;
+            color: #616161;
+        }
+
+        .status-badge.S1 {
+            background-color: #C8E6C9;
+            color: #1B5E20;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filters-panel {
+                position: static;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .search-container {
+                max-width: 100%;
+            }
+
+            .analytics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 0.5rem;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--muted);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <div class="logo-icon">S</div>
+                <div class="logo-text">
+                    <h1>Collaborator Hub</h1>
+                    <p>Gestão de Colaboradores</p>
+                </div>
+            </div>
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Buscar colaborador...">
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Analytics Grid -->
+        <div class="analytics-grid">
+            <div class="analytics-card blue">
+                <div class="analytics-card-content">
+                    <div class="analytics-card-label">Total de Colaboradores</div>
+                    <div class="analytics-card-value" id="totalCount">119</div>
+                </div>
+                <div class="analytics-card-icon">👥</div>
+            </div>
+            <div class="analytics-card green">
+                <div class="analytics-card-content">
+                    <div class="analytics-card-label">Presentes Hoje</div>
+                    <div class="analytics-card-value" id="presentCount">0</div>
+                    <div class="analytics-card-subtitle" id="presentPercent">0% de presença</div>
+                </div>
+                <div class="analytics-card-icon">📈</div>
+            </div>
+            <div class="analytics-card red">
+                <div class="analytics-card-content">
+                    <div class="analytics-card-label">Ausentes</div>
+                    <div class="analytics-card-value" id="absentCount">0</div>
+                </div>
+                <div class="analytics-card-icon">⚠️</div>
+            </div>
+            <div class="analytics-card orange">
+                <div class="analytics-card-content">
+                    <div class="analytics-card-label">Em Licença/Folga</div>
+                    <div class="analytics-card-value" id="leaveCount">0</div>
+                </div>
+                <div class="analytics-card-icon">💼</div>
+            </div>
+        </div>
+
+        <!-- Content Grid -->
+        <div class="content-grid">
+            <!-- Filters Panel -->
+            <div class="filters-panel">
+                <div class="filters-header">
+                    <h3>Filtros</h3>
+                    <button class="clear-btn" id="clearBtn" style="display: none;">Limpar</button>
+                </div>
+                <div class="filters-content">
+                    <!-- BPO Filter -->
+                    <div class="filter-section">
+                        <div class="filter-title" onclick="toggleSection(this)">
+                            BPO
+                            <span>▼</span>
+                        </div>
+                        <div class="filter-options" id="bpoOptions"></div>
+                    </div>
+
+                    <!-- Status Filter -->
+                    <div class="filter-section">
+                        <div class="filter-title" onclick="toggleSection(this)">
+                            Status
+                            <span>▼</span>
+                        </div>
+                        <div class="filter-options" id="statusOptions"></div>
+                    </div>
+                </div>
+                <div class="filters-footer">
+                    <span id="resultCount">119 resultados</span>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-container">
+                <div class="table-wrapper">
+                    <table id="collaboratorsTable">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Código</th>
+                                <th>BPO</th>
+                                <th>Cargo</th>
+                                <th>Contrato</th>
+                                <th>Admissão</th>
+                                <th>Líder</th>
+                                <th>Turno</th>
+                                <th colspan="30">Status por Data</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dados dos colaboradores
+        const collaboratorsData = [{"Nome do colaborador(a)": "SARA SIANY DO NASCIMENTO SPXBR14455", "Station ID": "7203", "Código": "SPXBR14455", "BPO": "SPX", "Contrato": "CLT", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T3_A_5X2_2_0200_17", "Admissão": "16/07/2024", "Desligamento": "", "01/04/2026": "AL", "02/04/2026": "AL", "03/04/2026": "AL", "04/04/2026": "AL", "05/04/2026": "AL", "06/04/2026": "AL", "07/04/2026": "AL", "08/04/2026": "AL", "09/04/2026": "AL", "10/04/2026": "AL", "11/04/2026": "AL", "12/04/2026": "AL", "13/04/2026": "AL", "14/04/2026": "AL", "15/04/2026": "AL", "16/04/2026": "AL", "17/04/2026": "AL", "18/04/2026": "AL", "19/04/2026": "AL", "20/04/2026": "AL", "21/04/2026": "AL", "22/04/2026": "AL", "23/04/2026": "AL", "24/04/2026": "AL", "25/04/2026": "AL", "26/04/2026": "AL", "27/04/2026": "AL", "28/04/2026": "AL", "29/04/2026": "AL", "30/04/2026": "AL", "Nome": "SARA SIANY DO NASCIMENTO"}, {"Nome do colaborador(a)": "ALESSANDRO BARBOSA DE ANDRADE GN39724", "Station ID": "7203", "Código": "GN39724", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T3_A_5X2_3_0200_12", "Admissão": "19/03/2026", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "FO", "04/04/2026": "P", "05/04/2026": "P", "06/04/2026": "DSR", "07/04/2026": "DSR", "08/04/2026": "P", "09/04/2026": "P", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "DSR", "14/04/2026": "DSR", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "DSR", "21/04/2026": "DSR", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "DSR", "28/04/2026": "DSR", "29/04/2026": "", "30/04/2026": "", "Nome": "ALESSANDRO BARBOSA DE ANDRADE"}, {"Nome do colaborador(a)": "JENNIFER GOMES DOS SANTOS CARLOS GN39781", "Station ID": "7203", "Código": "GN39781", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T3_A_5X2_3_0200_12", "Admissão": "19/03/2026", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "FO", "04/04/2026": "P", "05/04/2026": "FO", "06/04/2026": "DSR", "07/04/2026": "DSR", "08/04/2026": "P", "09/04/2026": "P", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "DSR", "14/04/2026": "DSR", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "DSR", "21/04/2026": "DSR", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "DSR", "28/04/2026": "DSR", "29/04/2026": "", "30/04/2026": "", "Nome": "JENNIFER GOMES DOS SANTOS CARLOS"}, {"Nome do colaborador(a)": "KAILLANY VITORIA CASTRO DA SILVA GN39723", "Station ID": "7203", "Código": "GN39723", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T3_A_5X2_3_0200_12", "Admissão": "19/03/2026", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "P", "05/04/2026": "P", "06/04/2026": "DSR", "07/04/2026": "DSR", "08/04/2026": "P", "09/04/2026": "P", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "DSR", "14/04/2026": "DSR", "15/04/2026": "", "16/04/2026": "FO", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "DSR", "21/04/2026": "DSR", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "DSR", "28/04/2026": "DSR", "29/04/2026": "", "30/04/2026": "", "Nome": "KAILLANY VITORIA CASTRO DA SILVA"}, {"Nome do colaborador(a)": "VICTORIA FEU FELIZARDO DA ROCHA GN21843", "Station ID": "7203", "Código": "GN21843", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T3_A_5X2_1_2100_67", "Admissão": "25/09/2025", "Desligamento": "", "01/04/2026": "AM", "02/04/2026": "AM", "03/04/2026": "FO", "04/04/2026": "P", "05/04/2026": "FO", "06/04/2026": "DV", "07/04/2026": "DV", "08/04/2026": "DV", "09/04/2026": "DV", "10/04/2026": "DV", "11/04/2026": "DV", "12/04/2026": "DV", "13/04/2026": "DV", "14/04/2026": "DV", "15/04/2026": "DV", "16/04/2026": "DV", "17/04/2026": "DV", "18/04/2026": "DV", "19/04/2026": "DV", "20/04/2026": "DV", "21/04/2026": "DV", "22/04/2026": "DV", "23/04/2026": "DV", "24/04/2026": "DV", "25/04/2026": "DV", "26/04/2026": "DV", "27/04/2026": "DV", "28/04/2026": "DV", "29/04/2026": "DV", "30/04/2026": "DV", "Nome": "VICTORIA FEU FELIZARDO DA ROCHA"}, {"Nome do colaborador(a)": "DANILO RODRIGUES DOS SANTOS SPXBR22251", "Station ID": "7203", "Código": "SPXBR22251", "BPO": "SPX", "Contrato": "CLT", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T3_A_5X2_3_0200_12", "Admissão": "13/02/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "FO", "04/04/2026": "P", "05/04/2026": "P", "06/04/2026": "DSR", "07/04/2026": "DSR", "08/04/2026": "P", "09/04/2026": "P", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "DSR", "14/04/2026": "DSR", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "DSR", "21/04/2026": "DSR", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "DSR", "28/04/2026": "DSR", "29/04/2026": "", "30/04/2026": "", "Nome": "DANILO RODRIGUES DOS SANTOS"}, {"Nome do colaborador(a)": "GABRIELLA AMARO LUIZ SPXBR30760", "Station ID": "7203", "Código": "SPXBR30760", "BPO": "SPX", "Contrato": "CLT", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T3_A_5X2_3_0200_12", "Admissão": "16/09/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "FO", "04/04/2026": "P", "05/04/2026": "P", "06/04/2026": "DSR", "07/04/2026": "DSR", "08/04/2026": "P", "09/04/2026": "P", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "DSR", "14/04/2026": "DSR", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "DSR", "21/04/2026": "DSR", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "DSR", "28/04/2026": "DSR", "29/04/2026": "", "30/04/2026": "", "Nome": "GABRIELLA AMARO LUIZ"}, {"Nome do colaborador(a)": "GUILHERME DA SILVA FREIRE DE OLIVEIRA SPXBR25286", "Station ID": "7203", "Código": "SPXBR25286", "BPO": "SPX", "Contrato": "CLT", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T3_A_5X2_3_0200_12", "Admissão": "15/04/2025", "Desligamento": "", "01/04/2026": "F", "02/04/2026": "P", "03/04/2026": "FO", "04/04/2026": "F", "05/04/2026": "F", "06/04/2026": "DSR", "07/04/2026": "DSR", "08/04/2026": "P", "09/04/2026": "P", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "DSR", "14/04/2026": "DSR", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "DSR", "21/04/2026": "DSR", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "DSR", "28/04/2026": "DSR", "29/04/2026": "", "30/04/2026": "", "Nome": "GUILHERME DA SILVA FREIRE DE OLIVEIRA"}, {"Nome do colaborador(a)": "JOSE DENILSON PAULINO DO NASCIMENTO GN33922", "Station ID": "7203", "Código": "GN33922", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T3_A_5X2_3_0200_12", "Admissão": "15/01/2026", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "FO", "04/04/2026": "AM", "05/04/2026": "FO", "06/04/2026": "DSR", "07/04/2026": "DSR", "08/04/2026": "P", "09/04/2026": "P", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "DSR", "14/04/2026": "DSR", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "DSR", "21/04/2026": "DSR", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "DSR", "28/04/2026": "DSR", "29/04/2026": "", "30/04/2026": "", "Nome": "JOSE DENILSON PAULINO DO NASCIMENTO"}, {"Nome do colaborador(a)": "SIMONY VITORIA MOURA BEZERRA GN33925", "Station ID": "7203", "Código": "GN33925", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T3_A_5X2_3_0200_12", "Admissão": "15/01/2026", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "FO", "04/04/2026": "P", "05/04/2026": "P", "06/04/2026": "DSR", "07/04/2026": "DSR", "08/04/2026": "P", "09/04/2026": "P", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "DSR", "14/04/2026": "DSR", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "DSR", "21/04/2026": "DSR", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "DSR", "28/04/2026": "DSR", "29/04/2026": "", "30/04/2026": "", "Nome": "SIMONY VITORIA MOURA BEZERRA"}, {"Nome do colaborador(a)": "ISABELLA DOS SANTOS GN26449", "Station ID": "7203", "Código": "GN26449", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T3_A_5X2_3_0200_12", "Admissão": "13/11/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "FO", "04/04/2026": "P", "05/04/2026": "P", "06/04/2026": "DSR", "07/04/2026": "DSR", "08/04/2026": "P", "09/04/2026": "P", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "DSR", "14/04/2026": "DSR", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "DSR", "21/04/2026": "DSR", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "DSR", "28/04/2026": "DSR", "29/04/2026": "", "30/04/2026": "", "Nome": "ISABELLA DOS SANTOS"}, {"Nome do colaborador(a)": "JANAINA FERREIRA COSTA GN29799", "Station ID": "7203", "Código": "GN29799", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T3_A_5X2_3_0200_12", "Admissão": "18/12/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "DF", "04/04/2026": "DF", "05/04/2026": "DF", "06/04/2026": "DF", "07/04/2026": "DF", "08/04/2026": "DF", "09/04/2026": "DF", "10/04/2026": "DF", "11/04/2026": "DF", "12/04/2026": "DF", "13/04/2026": "DF", "14/04/2026": "DF", "15/04/2026": "DF", "16/04/2026": "DF", "17/04/2026": "DF", "18/04/2026": "DF", "19/04/2026": "DF", "20/04/2026": "DF", "21/04/2026": "DF", "22/04/2026": "DF", "23/04/2026": "DF", "24/04/2026": "DF", "25/04/2026": "DF", "26/04/2026": "DF", "27/04/2026": "DF", "28/04/2026": "DF", "29/04/2026": "DF", "30/04/2026": "DF", "Nome": "JANAINA FERREIRA COSTA"}, {"Nome do colaborador(a)": "ALEXANDRE TEODORO CASSEMIRO GN33926", "Station ID": "7203", "Código": "GN33926", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T3_A_5X2_3_0200_12", "Admissão": "15/01/2026", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "P", "05/04/2026": "P", "06/04/2026": "DSR", "07/04/2026": "DSR", "08/04/2026": "P", "09/04/2026": "P", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "DSR", "14/04/2026": "DSR", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "DSR", "21/04/2026": "DSR", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "DSR", "28/04/2026": "DSR", "29/04/2026": "", "30/04/2026": "", "Nome": "ALEXANDRE TEODORO CASSEMIRO"}, {"Nome do colaborador(a)": "HUGO SILVA PEREIRA GN28739", "Station ID": "7203", "Código": "GN28739", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T3_A_5X2_3_0200_12", "Admissão": "04/12/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "AM", "03/04/2026": "P", "04/04/2026": "P", "05/04/2026": "FO", "06/04/2026": "DSR", "07/04/2026": "DSR", "08/04/2026": "P", "09/04/2026": "P", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "DSR", "14/04/2026": "DSR", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "DSR", "21/04/2026": "DSR", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "DSR", "28/04/2026": "DSR", "29/04/2026": "", "30/04/2026": "", "Nome": "HUGO SILVA PEREIRA"}, {"Nome do colaborador(a)": "ROSENIR DE NORONHA SOUZA SPXBR22450", "Station ID": "7203", "Código": "SPXBR22450", "BPO": "SPX", "Contrato": "CLT", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T3_A_5X2_1_0100_67", "Admissão": "13/02/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "FO", "04/04/2026": "DSR", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "FE", "08/04/2026": "FE", "09/04/2026": "FE", "10/04/2026": "FE", "11/04/2026": "FE", "12/04/2026": "FE", "13/04/2026": "FE", "14/04/2026": "FE", "15/04/2026": "FE", "16/04/2026": "FE", "17/04/2026": "FE", "18/04/2026": "FE", "19/04/2026": "FE", "20/04/2026": "FE", "21/04/2026": "FE", "22/04/2026": "FE", "23/04/2026": "FE", "24/04/2026": "FE", "25/04/2026": "FE", "26/04/2026": "FE", "27/04/2026": "FE", "28/04/2026": "FE", "29/04/2026": "FE", "30/04/2026": "FE", "Nome": "ROSENIR DE NORONHA SOUZA"}, {"Nome do colaborador(a)": "SELMA VICTOR FERREIRA DA SILVA SPXBR25460", "Station ID": "7203", "Código": "SPXBR25460", "BPO": "SPX", "Contrato": "CLT", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T3_A_5X2_1_0100_67", "Admissão": "15/04/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "FO", "04/04/2026": "DSR", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "P", "10/04/2026": "", "11/04/2026": "DSR", "12/04/2026": "DSR", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "DSR", "19/04/2026": "DSR", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "DSR", "26/04/2026": "DSR", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "SELMA VICTOR FERREIRA DA SILVA"}, {"Nome do colaborador(a)": "NEZIO HENRIQUE LARANJEIRA GN40544", "Station ID": "7203", "Código": "GN40544", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T3_A_5X2_1_0200_67", "Admissão": "26/03/2026", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "DSR", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "P", "10/04/2026": "", "11/04/2026": "DSR", "12/04/2026": "DSR", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "DSR", "19/04/2026": "DSR", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "DSR", "26/04/2026": "DSR", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "NEZIO HENRIQUE LARANJEIRA"}, {"Nome do colaborador(a)": "LUCAS CARDOSO FIRMINO GN40543", "Station ID": "7203", "Código": "GN40543", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T3_A_5X2_1_0200_67", "Admissão": "26/03/2026", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "DSR", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "P", "10/04/2026": "", "11/04/2026": "DSR", "12/04/2026": "DSR", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "DSR", "19/04/2026": "DSR", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "DSR", "26/04/2026": "DSR", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "LUCAS CARDOSO FIRMINO"}, {"Nome do colaborador(a)": "RAFAEL NORONHA SILVA SPXBR7874", "Station ID": "7203", "Código": "SPXBR7874", "BPO": "SPX", "Contrato": "CLT", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T3_A_5X2_1_0100_67", "Admissão": "19/03/2024", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "FO", "04/04/2026": "DSR", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "P", "10/04/2026": "", "11/04/2026": "DSR", "12/04/2026": "DSR", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "DSR", "19/04/2026": "DSR", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "DSR", "26/04/2026": "DSR", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "RAFAEL NORONHA SILVA"}, {"Nome do colaborador(a)": "ANTONIO CELSO SANTANA SPXBR28227", "Station ID": "7203", "Código": "SPXBR28227", "BPO": "SPX", "Contrato": "CLT", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T3_A_5X2_1_0100_67", "Admissão": "15/07/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "FO", "04/04/2026": "DSR", "05/04/2026": "DSR", "06/04/2026": "AM", "07/04/2026": "AM", "08/04/2026": "AM", "09/04/2026": "AM", "10/04/2026": "AM", "11/04/2026": "DSR", "12/04/2026": "DSR", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "DSR", "19/04/2026": "DSR", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "DSR", "26/04/2026": "DSR", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "ANTONIO CELSO SANTANA"}, {"Nome do colaborador(a)": "RENATO FERREIRA SPXBR18115", "Station ID": "7203", "Código": "SPXBR18115", "BPO": "SPX", "Contrato": "CLT", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T3_A_5X2_1_0100_67", "Admissão": "15/10/2024", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "DSR", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "P", "10/04/2026": "", "11/04/2026": "DSR", "12/04/2026": "DSR", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "DSR", "19/04/2026": "DSR", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "DSR", "26/04/2026": "DSR", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "RENATO FERREIRA"}, {"Nome do colaborador(a)": "JAQUELINE PEREIRA ADELINO SPXBR17931", "Station ID": "7203", "Código": "SPXBR17931", "BPO": "SPX", "Contrato": "CLT", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T3_A_5X2_1_0100_67", "Admissão": "15/10/2024", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "DSR", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "AM", "08/04/2026": "P", "09/04/2026": "P", "10/04/2026": "", "11/04/2026": "DSR", "12/04/2026": "DSR", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "DSR", "19/04/2026": "DSR", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "DSR", "26/04/2026": "DSR", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "JAQUELINE PEREIRA ADELINO"}, {"Nome do colaborador(a)": "GUILHERME DIAS DE SOUZA SPXBR8802", "Station ID": "7203", "Código": "SPXBR8802", "BPO": "SPX", "Contrato": "CLT", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T3_A_5X2_1_0100_67", "Admissão": "02/05/2024", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "DSR", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "F", "08/04/2026": "P", "09/04/2026": "P", "10/04/2026": "", "11/04/2026": "DSR", "12/04/2026": "DSR", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "DSR", "19/04/2026": "DSR", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "DSR", "26/04/2026": "DSR", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "GUILHERME DIAS DE SOUZA"}, {"Nome do colaborador(a)": "SARA CRISTINA CANDIDO ALVES PEREIRA SPXBR25284", "Station ID": "7203", "Código": "SPXBR25284", "BPO": "SPX", "Contrato": "CLT", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T3_A_5X2_1_0100_67", "Admissão": "15/04/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "FO", "04/04/2026": "DSR", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "F", "09/04/2026": "P", "10/04/2026": "", "11/04/2026": "DSR", "12/04/2026": "DSR", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "DSR", "19/04/2026": "DSR", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "DSR", "26/04/2026": "DSR", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "SARA CRISTINA CANDIDO ALVES PEREIRA"}, {"Nome do colaborador(a)": "ISABEL CRISTINA DE NORONHA SOUZA SPXBR24110", "Station ID": "7203", "Código": "SPXBR24110", "BPO": "SPX", "Contrato": "CLT", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T3_A_5X2_1_0100_67", "Admissão": "18/03/2025", "Desligamento": "", "01/04/2026": "FE", "02/04/2026": "FE", "03/04/2026": "FE", "04/04/2026": "FE", "05/04/2026": "FE", "06/04/2026": "FE", "07/04/2026": "FE", "08/04/2026": "FE", "09/04/2026": "FE", "10/04/2026": "FE", "11/04/2026": "FE", "12/04/2026": "FE", "13/04/2026": "FE", "14/04/2026": "FE", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "DSR", "19/04/2026": "DSR", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "DSR", "26/04/2026": "DSR", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "ISABEL CRISTINA DE NORONHA SOUZA"}, {"Nome do colaborador(a)": "SUELEN FERNANDA TRIGNANI NASCIMENTO SPXBR25288", "Station ID": "7203", "Código": "SPXBR25288", "BPO": "SPX", "Contrato": "CLT", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T3_A_5X2_1_0100_67", "Admissão": "15/04/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "FO", "04/04/2026": "DSR", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "P", "10/04/2026": "", "11/04/2026": "DSR", "12/04/2026": "DSR", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "DSR", "19/04/2026": "DSR", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "DSR", "26/04/2026": "DSR", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "SUELEN FERNANDA TRIGNANI NASCIMENTO"}, {"Nome do colaborador(a)": "EDIVALDO VICENTE PINTO GN26751", "Station ID": "7203", "Código": "GN26751", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T3_A_5X2_1_0100_67", "Admissão": "13/11/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "DSR", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "P", "10/04/2026": "", "11/04/2026": "DSR", "12/04/2026": "DSR", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "DSR", "19/04/2026": "DSR", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "DSR", "26/04/2026": "DSR", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "EDIVALDO VICENTE PINTO"}, {"Nome do colaborador(a)": "JOYCE VICTOR DOS SANTOS GN40541", "Station ID": "7203", "Código": "GN40541", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T3_A_5X2_1_0200_67", "Admissão": "26/03/2026", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "FO", "04/04/2026": "DSR", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "P", "10/04/2026": "", "11/04/2026": "DSR", "12/04/2026": "DSR", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "DSR", "19/04/2026": "DSR", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "DSR", "26/04/2026": "DSR", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "JOYCE VICTOR DOS SANTOS"}, {"Nome do colaborador(a)": "DAYANE DA SILVA CERQUEIRA GN28735", "Station ID": "7203", "Código": "GN28735", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T3_A_5X2_1_0100_67", "Admissão": "04/12/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "FO", "04/04/2026": "DSR", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "P", "10/04/2026": "", "11/04/2026": "DSR", "12/04/2026": "DSR", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "DSR", "19/04/2026": "DSR", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "DSR", "26/04/2026": "DSR", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "DAYANE DA SILVA CERQUEIRA"}, {"Nome do colaborador(a)": "ANA BEATRIZ GOMES GN40039", "Station ID": "7203", "Código": "GN40039", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T3_A_5X2_1_0200_67", "Admissão": "26/03/2026", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "FO", "04/04/2026": "DSR", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "P", "10/04/2026": "", "11/04/2026": "DSR", "12/04/2026": "DSR", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "DSR", "19/04/2026": "DSR", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "DSR", "26/04/2026": "DSR", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "ANA BEATRIZ GOMES"}, {"Nome do colaborador(a)": "MARCELA VITORIA MEIRA DE FREITAS SIQUEIRA GN39434", "Station ID": "7203", "Código": "GN39434", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T3_A_5X2_4_0200_23", "Admissão": "23/03/2026", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "DSR", "04/04/2026": "DSR", "05/04/2026": "FO", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "P", "10/04/2026": "DSR", "11/04/2026": "DSR", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "DSR", "18/04/2026": "DSR", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "DSR", "25/04/2026": "DSR", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "MARCELA VITORIA MEIRA DE FREITAS SIQUEIRA"}, {"Nome do colaborador(a)": "RENAN GABRIEL SANTANA FERREIRA GN21557", "Station ID": "7203", "Código": "GN21557", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T3_A_5X2_1_2100_67", "Admissão": "18/09/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "F", "03/04/2026": "DSR", "04/04/2026": "DSR", "05/04/2026": "P", "06/04/2026": "P", "07/04/2026": "S1", "08/04/2026": "F", "09/04/2026": "F", "10/04/2026": "DSR", "11/04/2026": "DSR", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "DSR", "18/04/2026": "DSR", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "DSR", "25/04/2026": "DSR", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "RENAN GABRIEL SANTANA FERREIRA"}, {"Nome do colaborador(a)": "CASSIA CONCEICAO DA ROCHA ALVES SPXBR22231", "Station ID": "7203", "Código": "SPXBR22231", "BPO": "SPX", "Contrato": "CLT", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T3_A_5X2_4_0200_23", "Admissão": "13/02/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "DSR", "04/04/2026": "DSR", "05/04/2026": "P", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "P", "10/04/2026": "DSR", "11/04/2026": "DSR", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "DSR", "18/04/2026": "DSR", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "DSR", "25/04/2026": "DSR", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "CASSIA CONCEICAO DA ROCHA ALVES"}, {"Nome do colaborador(a)": "RAYANE SANTOS DE LISBOA SPXBR24971", "Station ID": "7203", "Código": "SPXBR24971", "BPO": "SPX", "Contrato": "CLT", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T3_A_5X2_4_0200_23", "Admissão": "15/04/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "DSR", "04/04/2026": "DSR", "05/04/2026": "P", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "P", "10/04/2026": "DSR", "11/04/2026": "DSR", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "DSR", "18/04/2026": "DSR", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "DSR", "25/04/2026": "DSR", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "RAYANE SANTOS DE LISBOA"}, {"Nome do colaborador(a)": "ALINE MATIAS HILARIO SPXBR25282", "Station ID": "7203", "Código": "SPXBR25282", "BPO": "SPX", "Contrato": "CLT", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T3_A_5X2_4_0200_23", "Admissão": "15/04/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "DSR", "04/04/2026": "DSR", "05/04/2026": "P", "06/04/2026": "P", "07/04/2026": "AM", "08/04/2026": "AM", "09/04/2026": "AM", "10/04/2026": "DSR", "11/04/2026": "DSR", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "DSR", "18/04/2026": "DSR", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "DSR", "25/04/2026": "DSR", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "ALINE MATIAS HILARIO"}, {"Nome do colaborador(a)": "GABRIEL DE MELO MORGADO SPXBR24111", "Station ID": "7203", "Código": "SPXBR24111", "BPO": "SPX", "Contrato": "CLT", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T3_A_5X2_4_0200_23", "Admissão": "18/03/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "DSR", "04/04/2026": "DSR", "05/04/2026": "FO", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "P", "10/04/2026": "DSR", "11/04/2026": "DSR", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "DSR", "18/04/2026": "DSR", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "DSR", "25/04/2026": "DSR", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "GABRIEL DE MELO MORGADO"}, {"Nome do colaborador(a)": "MATEUS DOS SANTOS FERREIRA LACERDA SPXBR8863", "Station ID": "7203", "Código": "SPXBR8863", "BPO": "SPX", "Contrato": "CLT", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T3_A_5X2_4_0200_23", "Admissão": "02/05/2024", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "DSR", "04/04/2026": "DSR", "05/04/2026": "FO", "06/04/2026": "F", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "F", "10/04/2026": "DSR", "11/04/2026": "DSR", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "DSR", "18/04/2026": "DSR", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "DSR", "25/04/2026": "DSR", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "MATEUS DOS SANTOS FERREIRA LACERDA"}, {"Nome do colaborador(a)": "PATRICK DE SOUZA RODRIGUES SPXBR25283", "Station ID": "7203", "Código": "SPXBR25283", "BPO": "SPX", "Contrato": "CLT", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T3_A_5X2_4_0200_23", "Admissão": "15/04/2025", "Desligamento": "", "01/04/2026": "F", "02/04/2026": "P", "03/04/2026": "DP", "04/04/2026": "DP", "05/04/2026": "DP", "06/04/2026": "DP", "07/04/2026": "DP", "08/04/2026": "DP", "09/04/2026": "DP", "10/04/2026": "DP", "11/04/2026": "DP", "12/04/2026": "DP", "13/04/2026": "DP", "14/04/2026": "DP", "15/04/2026": "DP", "16/04/2026": "DP", "17/04/2026": "DP", "18/04/2026": "DP", "19/04/2026": "DP", "20/04/2026": "DP", "21/04/2026": "DP", "22/04/2026": "DP", "23/04/2026": "DP", "24/04/2026": "DP", "25/04/2026": "DP", "26/04/2026": "DP", "27/04/2026": "DP", "28/04/2026": "DP", "29/04/2026": "DP", "30/04/2026": "DP", "Nome": "PATRICK DE SOUZA RODRIGUES"}, {"Nome do colaborador(a)": "BRUNO DO CARMO PIZZOLITTO GN23467", "Station ID": "7203", "Código": "GN23467", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T3_A_5X2_1_2100_67", "Admissão": "09/10/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "DSR", "04/04/2026": "DSR", "05/04/2026": "S1", "06/04/2026": "F", "07/04/2026": "S1", "08/04/2026": "P", "09/04/2026": "P", "10/04/2026": "DSR", "11/04/2026": "DSR", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "DSR", "18/04/2026": "DSR", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "DSR", "25/04/2026": "DSR", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "BRUNO DO CARMO PIZZOLITTO"}, {"Nome do colaborador(a)": "JEFERSON CONCEICAO PASSOS GN28920", "Station ID": "7203", "Código": "GN28920", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T3_A_5X2_4_0200_23", "Admissão": "11/12/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "DSR", "04/04/2026": "DSR", "05/04/2026": "FO", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "P", "10/04/2026": "DSR", "11/04/2026": "DSR", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "DSR", "18/04/2026": "DSR", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "DSR", "25/04/2026": "DSR", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "JEFERSON CONCEICAO PASSOS"}, {"Nome do colaborador(a)": "TONGO MBALA GN28951", "Station ID": "7203", "Código": "GN28951", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T3_A_5X2_4_0200_23", "Admissão": "15/12/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "DSR", "04/04/2026": "DSR", "05/04/2026": "FO", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "P", "10/04/2026": "DSR", "11/04/2026": "DSR", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "DSR", "18/04/2026": "DSR", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "DSR", "25/04/2026": "DSR", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "TONGO MBALA"}, {"Nome do colaborador(a)": "KATIA SABRINA BENNATI GN36118", "Station ID": "7203", "Código": "GN36118", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T3_A_5X2_4_0200_23", "Admissão": "09/02/2026", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "DSR", "04/04/2026": "DSR", "05/04/2026": "P", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "P", "10/04/2026": "DSR", "11/04/2026": "DSR", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "DSR", "18/04/2026": "DSR", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "DSR", "25/04/2026": "DSR", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "KATIA SABRINA BENNATI"}, {"Nome do colaborador(a)": "THAMIRES APARECIDA DE OLIVEIRA MACHADO GN33919", "Station ID": "7203", "Código": "GN33919", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T3_A_5X2_4_0200_23", "Admissão": "12/01/2026", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "DSR", "04/04/2026": "DSR", "05/04/2026": "FO", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "P", "10/04/2026": "DSR", "11/04/2026": "DSR", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "DSR", "18/04/2026": "DSR", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "DSR", "25/04/2026": "DSR", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "THAMIRES APARECIDA DE OLIVEIRA MACHADO"}, {"Nome do colaborador(a)": "LEONARDO OLIVEIRA PIRES DE CARVALHO GN33945", "Station ID": "7203", "Código": "GN33945", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T3_A_5X2_3_0200_12", "Admissão": "12/01/2026", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "P", "05/04/2026": "P", "06/04/2026": "DSR", "07/04/2026": "DSR", "08/04/2026": "P", "09/04/2026": "P", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "DSR", "14/04/2026": "DSR", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "DSR", "21/04/2026": "DSR", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "DSR", "28/04/2026": "DSR", "29/04/2026": "", "30/04/2026": "", "Nome": "LEONARDO OLIVEIRA PIRES DE CARVALHO"}, {"Nome do colaborador(a)": "GABRIEL KUVALELA JOMBA SPXBR22306", "Station ID": "7203", "Código": "SPXBR22306", "BPO": "SPX", "Contrato": "CLT", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T3_A_5X2_2_0200_17", "Admissão": "13/02/2025", "Desligamento": "", "01/04/2026": "FE", "02/04/2026": "FE", "03/04/2026": "FE", "04/04/2026": "FE", "05/04/2026": "FE", "06/04/2026": "P", "07/04/2026": "F", "08/04/2026": "DSR", "09/04/2026": "DSR", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "DSR", "16/04/2026": "DSR", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "DSR", "23/04/2026": "DSR", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "DSR", "30/04/2026": "DSR", "Nome": "GABRIEL KUVALELA JOMBA"}, {"Nome do colaborador(a)": "SAMUEL ALEXANDRO LARGHY ISSA SPXBR12401", "Station ID": "7203", "Código": "SPXBR12401", "BPO": "SPX", "Contrato": "CLT", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T3_A_5X2_2_0200_17", "Admissão": "20/05/2024", "Desligamento": "", "01/04/2026": "DSR", "02/04/2026": "DSR", "03/04/2026": "P", "04/04/2026": "P", "05/04/2026": "S1", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "DSR", "09/04/2026": "DSR", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "DSR", "16/04/2026": "DSR", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "DSR", "23/04/2026": "DSR", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "DSR", "30/04/2026": "DSR", "Nome": "SAMUEL ALEXANDRO LARGHY ISSA"}, {"Nome do colaborador(a)": "CLEIBE JOHNES SANTOS VEIGA GN39414", "Station ID": "7203", "Código": "GN39414", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T3_A_5X2_2_0200_17", "Admissão": "23/03/2026", "Desligamento": "", "01/04/2026": "DSR", "02/04/2026": "DSR", "03/04/2026": "FO", "04/04/2026": "P", "05/04/2026": "P", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "DSR", "09/04/2026": "DSR", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "DSR", "16/04/2026": "DSR", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "DSR", "23/04/2026": "DSR", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "DSR", "30/04/2026": "DSR", "Nome": "CLEIBE JOHNES SANTOS VEIGA"}, {"Nome do colaborador(a)": "ROSIMEIRE SIQUEIRA DA SILVA GN21586", "Station ID": "7203", "Código": "GN21586", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T3_A_5X2_2_0200_17", "Admissão": "18/09/2025", "Desligamento": "", "01/04/2026": "DSR", "02/04/2026": "DSR", "03/04/2026": "FO", "04/04/2026": "P", "05/04/2026": "FO", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "DSR", "09/04/2026": "DSR", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "DSR", "16/04/2026": "DSR", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "DSR", "23/04/2026": "DSR", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "DSR", "30/04/2026": "DSR", "Nome": "ROSIMEIRE SIQUEIRA DA SILVA"}, {"Nome do colaborador(a)": "GISLENE SOUZA MENDONCA GN25847", "Station ID": "7203", "Código": "GN25847", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T3_A_5X2_2_0200_17", "Admissão": "13/11/2025", "Desligamento": "", "01/04/2026": "DSR", "02/04/2026": "DSR", "03/04/2026": "FO", "04/04/2026": "P", "05/04/2026": "FO", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "DSR", "09/04/2026": "DSR", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "DSR", "16/04/2026": "DSR", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "DSR", "23/04/2026": "DSR", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "DSR", "30/04/2026": "DSR", "Nome": "GISLENE SOUZA MENDONCA"}, {"Nome do colaborador(a)": "MARIANE SILVA SANTANA GN24727", "Station ID": "7203", "Código": "GN24727", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T3_A_5X2_4_0200_23", "Admissão": "17/11/2025", "Desligamento": "", "01/04/2026": "DSR", "02/04/2026": "DSR", "03/04/2026": "FO", "04/04/2026": "P", "05/04/2026": "P", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "DSR", "09/04/2026": "DSR", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "DSR", "16/04/2026": "DSR", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "DSR", "23/04/2026": "DSR", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "DSR", "30/04/2026": "DSR", "Nome": "MARIANE SILVA SANTANA"}, {"Nome do colaborador(a)": "GUSTAVO VICTOR SANTANA GN29042", "Station ID": "7203", "Código": "GN29042", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T3_A_5X2_2_0200_17", "Admissão": "08/12/2025", "Desligamento": "", "01/04/2026": "DSR", "02/04/2026": "DSR", "03/04/2026": "FO", "04/04/2026": "P", "05/04/2026": "P", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "DSR", "09/04/2026": "DSR", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "DSR", "16/04/2026": "DSR", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "DSR", "23/04/2026": "DSR", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "DSR", "30/04/2026": "DSR", "Nome": "GUSTAVO VICTOR SANTANA"}, {"Nome do colaborador(a)": "GISLEIDE MARIA DA SILVA GN33929", "Station ID": "7203", "Código": "GN33929", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T3_A_5X2_2_0200_17", "Admissão": "12/01/2026", "Desligamento": "", "01/04/2026": "DSR", "02/04/2026": "DSR", "03/04/2026": "P", "04/04/2026": "P", "05/04/2026": "P", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "DSR", "09/04/2026": "DSR", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "DSR", "16/04/2026": "DSR", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "DSR", "23/04/2026": "DSR", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "DSR", "30/04/2026": "DSR", "Nome": "GISLEIDE MARIA DA SILVA"}, {"Nome do colaborador(a)": "ANA CAROLINA ALVES CONDE GN33875", "Station ID": "7203", "Código": "GN33875", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T3_A_5X2_2_0200_17", "Admissão": "12/01/2026", "Desligamento": "", "01/04/2026": "DSR", "02/04/2026": "DSR", "03/04/2026": "P", "04/04/2026": "P", "05/04/2026": "FO", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "DSR", "09/04/2026": "DSR", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "DSR", "16/04/2026": "DSR", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "DSR", "23/04/2026": "DSR", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "DSR", "30/04/2026": "DSR", "Nome": "ANA CAROLINA ALVES CONDE"}, {"Nome do colaborador(a)": "LARISSA CAMPOS DE OLIVEIRA GN40540", "Station ID": "7203", "Código": "GN40540", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T3_A_5X2_2_0200_17", "Admissão": "26/03/2026", "Desligamento": "", "01/04/2026": "DSR", "02/04/2026": "DSR", "03/04/2026": "P", "04/04/2026": "P", "05/04/2026": "P", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "DSR", "09/04/2026": "DSR", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "DSR", "16/04/2026": "DSR", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "DSR", "23/04/2026": "DSR", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "DSR", "30/04/2026": "DSR", "Nome": "LARISSA CAMPOS DE OLIVEIRA"}, {"Nome do colaborador(a)": "CAMILA DOS SANTOS ROCHA GN33940", "Station ID": "7203", "Código": "GN33940", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T3_A_5X2_2_0200_17", "Admissão": "12/01/2026", "Desligamento": "", "01/04/2026": "DSR", "02/04/2026": "DSR", "03/04/2026": "P", "04/04/2026": "P", "05/04/2026": "P", "06/04/2026": "P", "07/04/2026": "AM", "08/04/2026": "DSR", "09/04/2026": "DSR", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "DSR", "16/04/2026": "DSR", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "DSR", "23/04/2026": "DSR", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "DSR", "30/04/2026": "DSR", "Nome": "CAMILA DOS SANTOS ROCHA"}, {"Nome do colaborador(a)": "HENRIQUE CAVILHA GOMES FONTOLAN GN40584", "Station ID": "7203", "Código": "GN40584", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T3_A_5X2_2_0200_17", "Admissão": "26/03/2026", "Desligamento": "", "01/04/2026": "DSR", "02/04/2026": "DSR", "03/04/2026": "P", "04/04/2026": "P", "05/04/2026": "P", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "DSR", "09/04/2026": "DSR", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "DSR", "16/04/2026": "DSR", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "DSR", "23/04/2026": "DSR", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "DSR", "30/04/2026": "DSR", "Nome": "HENRIQUE CAVILHA GOMES FONTOLAN"}, {"Nome do colaborador(a)": "MORGANA REGINA DE MORAES GN29860", "Station ID": "7203", "Código": "GN29860", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T3_A_5X2_2_0200_17", "Admissão": "22/12/2025", "Desligamento": "", "01/04/2026": "DSR", "02/04/2026": "DSR", "03/04/2026": "FO", "04/04/2026": "P", "05/04/2026": "P", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "DSR", "09/04/2026": "DSR", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "FO", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "DSR", "16/04/2026": "DSR", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "DSR", "23/04/2026": "DSR", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "DSR", "30/04/2026": "DSR", "Nome": "MORGANA REGINA DE MORAES"}, {"Nome do colaborador(a)": "EDUARDO NORTON RODRIGUES GN37495", "Station ID": "7203", "Código": "GN37495", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T3_A_5X2_2_0200_17", "Admissão": "16/02/2026", "Desligamento": "", "01/04/2026": "DSR", "02/04/2026": "DSR", "03/04/2026": "P", "04/04/2026": "P", "05/04/2026": "P", "06/04/2026": "P", "07/04/2026": "S1", "08/04/2026": "DSR", "09/04/2026": "DSR", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "DSR", "16/04/2026": "DSR", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "DSR", "23/04/2026": "DSR", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "DSR", "30/04/2026": "DSR", "Nome": "EDUARDO NORTON RODRIGUES"}, {"Nome do colaborador(a)": "DIEGO DA SILVA ROCHA GN41570", "Station ID": "7203", "Código": "Não encontrado, contate WFM", "BPO": "Não encontrado, contate WFM", "Contrato": "Não encontrado, contate WFM", "Lider": "", "Cargo": "Não encontrado, contate WFM", "Turno": "Não encontrado, contate WFM", "Admissão": "Não encontrado, contate WFM", "Desligamento": "", "01/04/2026": "NC", "02/04/2026": "NC", "03/04/2026": "P", "04/04/2026": "P", "05/04/2026": "P", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "DSR", "09/04/2026": "DSR", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "DSR", "16/04/2026": "DSR", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "DSR", "23/04/2026": "DSR", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "DSR", "30/04/2026": "DSR", "Nome": "DIEGO DA SILVA ROCHA"}, {"Nome do colaborador(a)": "RAFAEL FELIPE LIMA GN41710", "Station ID": "7203", "Código": "Não encontrado, contate WFM", "BPO": "Não encontrado, contate WFM", "Contrato": "Não encontrado, contate WFM", "Lider": "", "Cargo": "Não encontrado, contate WFM", "Turno": "Não encontrado, contate WFM", "Admissão": "Não encontrado, contate WFM", "Desligamento": "", "01/04/2026": "NC", "02/04/2026": "NC", "03/04/2026": "P", "04/04/2026": "P", "05/04/2026": "S1", "06/04/2026": "P", "07/04/2026": "F", "08/04/2026": "DSR", "09/04/2026": "DSR", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "DSR", "16/04/2026": "DSR", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "DSR", "23/04/2026": "DSR", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "DSR", "30/04/2026": "DSR", "Nome": "RAFAEL FELIPE LIMA"}, {"Nome do colaborador(a)": "ERIKSON FLAVIO SOUZA DOS SANTOS GN36992", "Station ID": "7203", "Código": "GN36992", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "", "Cargo": "FISCAL DE PATIO", "Turno": "T3_A_6X1_2_0300_1", "Admissão": "12/02/2026", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "P", "05/04/2026": "P", "06/04/2026": "DSR", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "P", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "DSR", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "DSR", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "DSR", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "ERIKSON FLAVIO SOUZA DOS SANTOS"}, {"Nome do colaborador(a)": "RINNARY ADRIELLE DE SOUZA CASTRO SPXBR17507", "Station ID": "7203", "Código": "SPXBR17507", "BPO": "SPX", "Contrato": "CLT", "Lider": "", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T3_A_5X2_1_2100_67", "Admissão": "17/09/2024", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "P", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "P", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "DSR", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "DSR", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "DSR", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "RINNARY ADRIELLE DE SOUZA CASTRO"}, {"Nome do colaborador(a)": "KAUA FRANCA DA SILVA GN36990", "Station ID": "7203", "Código": "GN36990", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "", "Cargo": "FISCAL DE PATIO", "Turno": "T3_A_6X1_1_0400_7", "Admissão": "12/02/2026", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "F", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "P", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "DSR", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "DSR", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "DSR", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "KAUA FRANCA DA SILVA"}, {"Nome do colaborador(a)": "BEATRIS RODRIGUES DA SILVA SPXBR30734", "Station ID": "7203", "Código": "SPXBR30734", "BPO": "SPX", "Contrato": "CLT", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T1_A_5X2_1_0800_67", "Admissão": "16/09/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "DF", "03/04/2026": "DF", "04/04/2026": "DF", "05/04/2026": "DF", "06/04/2026": "DF", "07/04/2026": "DF", "08/04/2026": "DF", "09/04/2026": "DF", "10/04/2026": "DF", "11/04/2026": "DF", "12/04/2026": "DF", "13/04/2026": "DF", "14/04/2026": "DF", "15/04/2026": "DF", "16/04/2026": "DF", "17/04/2026": "DF", "18/04/2026": "DF", "19/04/2026": "DF", "20/04/2026": "DF", "21/04/2026": "DF", "22/04/2026": "DF", "23/04/2026": "DF", "24/04/2026": "DF", "25/04/2026": "DF", "26/04/2026": "DF", "27/04/2026": "DF", "28/04/2026": "DF", "29/04/2026": "DF", "30/04/2026": "DF", "Nome": "BEATRIS RODRIGUES DA SILVA"}, {"Nome do colaborador(a)": "NIKOLAS FABRO DE LIMA GN27592", "Station ID": "7203", "Código": "GN27592", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T1_A_5X2_2_0812_17", "Admissão": "27/11/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "P", "05/04/2026": "DSR", "06/04/2026": "DSR", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "NIKOLAS FABRO DE LIMA"}, {"Nome do colaborador(a)": "THAIS SANTOS DE LISBOA GN27595", "Station ID": "7203", "Código": "GN27595", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T1_A_5X2_2_0812_17", "Admissão": "25/11/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "P", "05/04/2026": "DSR", "06/04/2026": "DSR", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "THAIS SANTOS DE LISBOA"}, {"Nome do colaborador(a)": "PAMELA CRISTINE DA SILVA GI640224", "Station ID": "7203", "Código": "GI640224", "BPO": "GI GROUP", "Contrato": "TEMPORÁRIO", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T3_A_5X2_1_2100_67", "Admissão": "11/08/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "FO", "04/04/2026": "DSR", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "DSR", "12/04/2026": "DSR", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "DSR", "19/04/2026": "DSR", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "DSR", "26/04/2026": "DSR", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "PAMELA CRISTINE DA SILVA"}, {"Nome do colaborador(a)": "MESSIAS PEREIRA DOS SANTOS SPXBR33776", "Station ID": "7203", "Código": "SPXBR33776", "BPO": "SPX", "Contrato": "CLT", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T1_A_5X2_2_0812_17", "Admissão": "11/11/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "P", "05/04/2026": "DSR", "06/04/2026": "DSR", "07/04/2026": "S1", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "MESSIAS PEREIRA DOS SANTOS"}, {"Nome do colaborador(a)": "MICHELE FERREIRA DA SILVA DONATO SPXBR30811", "Station ID": "7203", "Código": "SPXBR30811", "BPO": "SPX", "Contrato": "CLT", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T1_A_5X2_1_0800_67", "Admissão": "16/09/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "DSR", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "DSR", "12/04/2026": "DSR", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "DSR", "19/04/2026": "DSR", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "DSR", "26/04/2026": "DSR", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "MICHELE FERREIRA DA SILVA DONATO"}, {"Nome do colaborador(a)": "ITHAMARA MARQUES DA SILVA SPXBR30768", "Station ID": "7203", "Código": "SPXBR30768", "BPO": "SPX", "Contrato": "CLT", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T1_A_5X2_1_0800_67", "Admissão": "16/09/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "DSR", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "DSR", "12/04/2026": "DSR", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "DSR", "19/04/2026": "DSR", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "DSR", "26/04/2026": "DSR", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "ITHAMARA MARQUES DA SILVA"}, {"Nome do colaborador(a)": "CAIO FERNANDES DE OLIVEIRA BRAGANTE SPXBR22226", "Station ID": "7203", "Código": "SPXBR22226", "BPO": "SPX", "Contrato": "CLT", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T1_A_5X2_2_0812_17", "Admissão": "13/02/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "P", "05/04/2026": "DSR", "06/04/2026": "DSR", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "CAIO FERNANDES DE OLIVEIRA BRAGANTE"}, {"Nome do colaborador(a)": "LIRISMAR BORGES LIMA SPXBR15152", "Station ID": "7203", "Código": "SPXBR15152", "BPO": "SPX", "Contrato": "CLT", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T1_A_5X2_2_0812_17", "Admissão": "20/08/2024", "Desligamento": "", "01/04/2026": "AL", "02/04/2026": "AL", "03/04/2026": "AL", "04/04/2026": "AL", "05/04/2026": "AL", "06/04/2026": "AL", "07/04/2026": "AL", "08/04/2026": "AL", "09/04/2026": "AL", "10/04/2026": "AL", "11/04/2026": "AL", "12/04/2026": "AL", "13/04/2026": "AL", "14/04/2026": "AL", "15/04/2026": "AL", "16/04/2026": "AL", "17/04/2026": "AL", "18/04/2026": "AL", "19/04/2026": "AL", "20/04/2026": "AL", "21/04/2026": "AL", "22/04/2026": "AL", "23/04/2026": "AL", "24/04/2026": "AL", "25/04/2026": "AL", "26/04/2026": "AL", "27/04/2026": "AL", "28/04/2026": "AL", "29/04/2026": "AL", "30/04/2026": "AL", "Nome": "LIRISMAR BORGES LIMA"}, {"Nome do colaborador(a)": "MELQUISEDEQUE SANTOS DE BARROS SPXBR17501", "Station ID": "7203", "Código": "SPXBR17501", "BPO": "SPX", "Contrato": "CLT", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T1_A_5X2_2_0812_17", "Admissão": "17/09/2024", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "DSR", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "MELQUISEDEQUE SANTOS DE BARROS"}, {"Nome do colaborador(a)": "GEIZITON GOES DOS SANTOS SPXBR32849", "Station ID": "7203", "Código": "SPXBR32849", "BPO": "SPX", "Contrato": "CLT", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T1_A_5X2_2_0812_17", "Admissão": "14/10/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "DF", "03/04/2026": "DF", "04/04/2026": "DF", "05/04/2026": "DF", "06/04/2026": "DF", "07/04/2026": "DF", "08/04/2026": "DF", "09/04/2026": "DF", "10/04/2026": "DF", "11/04/2026": "DF", "12/04/2026": "DF", "13/04/2026": "DF", "14/04/2026": "DF", "15/04/2026": "DF", "16/04/2026": "DF", "17/04/2026": "DF", "18/04/2026": "DF", "19/04/2026": "DF", "20/04/2026": "DF", "21/04/2026": "DF", "22/04/2026": "DF", "23/04/2026": "DF", "24/04/2026": "DF", "25/04/2026": "DF", "26/04/2026": "DF", "27/04/2026": "DF", "28/04/2026": "DF", "29/04/2026": "DF", "30/04/2026": "DF", "Nome": "GEIZITON GOES DOS SANTOS"}, {"Nome do colaborador(a)": "ALINE AQUINO OLIVEIRA SPXBR22191", "Station ID": "7203", "Código": "SPXBR22191", "BPO": "SPX", "Contrato": "CLT", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T1_A_5X2_2_0812_17", "Admissão": "13/02/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "FO", "04/04/2026": "BH", "05/04/2026": "DSR", "06/04/2026": "DSR", "07/04/2026": "FE", "08/04/2026": "FE", "09/04/2026": "FE", "10/04/2026": "FE", "11/04/2026": "FE", "12/04/2026": "FE", "13/04/2026": "FE", "14/04/2026": "FE", "15/04/2026": "FE", "16/04/2026": "FE", "17/04/2026": "FE", "18/04/2026": "FE", "19/04/2026": "FE", "20/04/2026": "FE", "21/04/2026": "FE", "22/04/2026": "FE", "23/04/2026": "FE", "24/04/2026": "FE", "25/04/2026": "FE", "26/04/2026": "FE", "27/04/2026": "FE", "28/04/2026": "FE", "29/04/2026": "FE", "30/04/2026": "FE", "Nome": "ALINE AQUINO OLIVEIRA"}, {"Nome do colaborador(a)": "MARIA EDUARDA DOS SANTOS FERREIRA SPXBR30804", "Station ID": "7203", "Código": "SPXBR30804", "BPO": "SPX", "Contrato": "CLT", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T1_A_5X2_2_0812_17", "Admissão": "16/09/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "P", "05/04/2026": "DSR", "06/04/2026": "DSR", "07/04/2026": "S1", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "MARIA EDUARDA DOS SANTOS FERREIRA"}, {"Nome do colaborador(a)": "FRANCIANE CRISTINA SANTANA DE CASTRO SPXBR32848", "Station ID": "7203", "Código": "SPXBR32848", "BPO": "SPX", "Contrato": "CLT", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T1_A_5X2_2_0812_17", "Admissão": "14/10/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "P", "05/04/2026": "DSR", "06/04/2026": "DSR", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "FRANCIANE CRISTINA SANTANA DE CASTRO"}, {"Nome do colaborador(a)": "ELISANGELA GOMES DE LUCENA SPXBR30751", "Station ID": "7203", "Código": "SPXBR30751", "BPO": "SPX", "Contrato": "CLT", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T1_A_5X2_2_1000_17", "Admissão": "16/09/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "FO", "04/04/2026": "P", "05/04/2026": "DSR", "06/04/2026": "DSR", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "ELISANGELA GOMES DE LUCENA"}, {"Nome do colaborador(a)": "DANIEL FRANCISCO FERREIRA DA COSTA BENEVIDES SPXBR34049", "Station ID": "7203", "Código": "SPXBR34049", "BPO": "SPX", "Contrato": "CLT", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T1_A_5X2_2_0812_17", "Admissão": "11/11/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "P", "05/04/2026": "DSR", "06/04/2026": "DSR", "07/04/2026": "S1", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "DANIEL FRANCISCO FERREIRA DA COSTA BENEVIDES"}, {"Nome do colaborador(a)": "THIAGO KAIQUE DA SILVA SPXBR34109", "Station ID": "7203", "Código": "SPXBR34109", "BPO": "SPX", "Contrato": "CLT", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T1_A_5X2_2_0812_17", "Admissão": "11/11/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "P", "05/04/2026": "DSR", "06/04/2026": "DSR", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "THIAGO KAIQUE DA SILVA"}, {"Nome do colaborador(a)": "NELSON SENA SILVA JUNIOR SPXBR32847", "Station ID": "7203", "Código": "SPXBR32847", "BPO": "SPX", "Contrato": "CLT", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T1_A_5X2_2_0812_17", "Admissão": "14/10/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "FO", "04/04/2026": "P", "05/04/2026": "DSR", "06/04/2026": "DSR", "07/04/2026": "S1", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "NELSON SENA SILVA JUNIOR"}, {"Nome do colaborador(a)": "MAGNO SANTOS DE BRITO SPXBR32845", "Station ID": "7203", "Código": "SPXBR32845", "BPO": "SPX", "Contrato": "CLT", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T1_A_5X2_2_0812_17", "Admissão": "14/10/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "FO", "04/04/2026": "P", "05/04/2026": "DSR", "06/04/2026": "DSR", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "MAGNO SANTOS DE BRITO"}, {"Nome do colaborador(a)": "KLEBER JACOB SALES SPXBR21886", "Station ID": "7203", "Código": "SPXBR21886", "BPO": "SPX", "Contrato": "CLT", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T1_A_5X2_1_0800_67", "Admissão": "13/02/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "FO", "04/04/2026": "DSR", "05/04/2026": "DSR", "06/04/2026": "F", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "DSR", "12/04/2026": "DSR", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "DSR", "19/04/2026": "DSR", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "DSR", "26/04/2026": "DSR", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "KLEBER JACOB SALES"}, {"Nome do colaborador(a)": "LUCAS MASCARENHAS PORTELA SPXBR24109", "Station ID": "7203", "Código": "SPXBR24109", "BPO": "SPX", "Contrato": "CLT", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T1_A_5X2_2_0812_17", "Admissão": "18/03/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "P", "05/04/2026": "DSR", "06/04/2026": "DSR", "07/04/2026": "S1", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "LUCAS MASCARENHAS PORTELA"}, {"Nome do colaborador(a)": "LARISSA RAIANE TOLEDO LUIZ GN27465", "Station ID": "7203", "Código": "GN27465", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T1_A_5X2_1_0800_67", "Admissão": "24/11/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "DSR", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "LARISSA RAIANE TOLEDO LUIZ"}, {"Nome do colaborador(a)": "ARTHUR ALVES DA SILVEIRA GN28810", "Station ID": "7203", "Código": "GN28810", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T1_A_5X2_1_0800_67", "Admissão": "04/12/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "FO", "04/04/2026": "DSR", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "DSR", "12/04/2026": "DSR", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "DSR", "19/04/2026": "DSR", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "DSR", "26/04/2026": "DSR", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "ARTHUR ALVES DA SILVEIRA"}, {"Nome do colaborador(a)": "FLAVIO ALISON ALVES MENDES GN28805", "Station ID": "7203", "Código": "GN28805", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T1_A_5X2_1_0800_67", "Admissão": "04/12/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "FO", "04/04/2026": "DSR", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "DSR", "12/04/2026": "DSR", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "DSR", "19/04/2026": "DSR", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "DSR", "26/04/2026": "DSR", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "FLAVIO ALISON ALVES MENDES"}, {"Nome do colaborador(a)": "DEBORAH SILVA DO NASCIMENTO GN28811", "Station ID": "7203", "Código": "GN28811", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T1_A_5X2_1_0800_67", "Admissão": "04/12/2025", "Desligamento": "", "01/04/2026": "AM", "02/04/2026": "P", "03/04/2026": "FO", "04/04/2026": "DSR", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "S1", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "DSR", "12/04/2026": "DSR", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "DSR", "19/04/2026": "DSR", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "DSR", "26/04/2026": "DSR", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "DEBORAH SILVA DO NASCIMENTO"}, {"Nome do colaborador(a)": "JONAS FILIPE GOMES SAMPAIO GN28946", "Station ID": "7203", "Código": "GN28946", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T1_A_5X2_1_0800_67", "Admissão": "11/12/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "FO", "04/04/2026": "DSR", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "DSR", "12/04/2026": "DSR", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "DSR", "19/04/2026": "DSR", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "DSR", "26/04/2026": "DSR", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "JONAS FILIPE GOMES SAMPAIO"}, {"Nome do colaborador(a)": "JOYCE TORRES DE ALMEIDA SPXBR32852", "Station ID": "7203", "Código": "SPXBR32852", "BPO": "SPX", "Contrato": "CLT", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T3_A_5X2_3_0200_12", "Admissão": "14/10/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "FO", "04/04/2026": "P", "05/04/2026": "DSR", "06/04/2026": "DSR", "07/04/2026": "AM", "08/04/2026": "AM", "09/04/2026": "AM", "10/04/2026": "AM", "11/04/2026": "AM", "12/04/2026": "DSR", "13/04/2026": "DSR", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "DSR", "20/04/2026": "DSR", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "DSR", "27/04/2026": "DSR", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "JOYCE TORRES DE ALMEIDA"}, {"Nome do colaborador(a)": "CLAYTON JHONATA DE OLIVEIRA SPXBR27600", "Station ID": "7203", "Código": "SPXBR27600", "BPO": "SPX", "Contrato": "CLT", "Lider": "Jhadine PM2", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T1_A_5X2_2_1212_17", "Admissão": "10/06/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "FO", "04/04/2026": "P", "05/04/2026": "DSR", "06/04/2026": "DSR", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "CLAYTON JHONATA DE OLIVEIRA"}, {"Nome do colaborador(a)": "ANA CAROLINE SANTANA DE SOUZA GN29875", "Station ID": "7203", "Código": "GN29875", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T1_A_5X2_1_0800_67", "Admissão": "18/12/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "DSR", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "DSR", "12/04/2026": "DSR", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "DSR", "19/04/2026": "DSR", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "DSR", "26/04/2026": "DSR", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "ANA CAROLINE SANTANA DE SOUZA"}, {"Nome do colaborador(a)": "FLAVIA SOUZA DO AMARAL GN33918", "Station ID": "7203", "Código": "GN33918", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T1_A_5X2_1_0800_67", "Admissão": "12/01/2026", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "DSR", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "DSR", "12/04/2026": "DSR", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "DSR", "19/04/2026": "DSR", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "DSR", "26/04/2026": "DSR", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "FLAVIA SOUZA DO AMARAL"}, {"Nome do colaborador(a)": "EVERTON FRUTUOSO DO NASCIMENTO GN33872", "Station ID": "7203", "Código": "GN33872", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T1_A_5X2_1_0800_67", "Admissão": "12/01/2026", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "FO", "04/04/2026": "DSR", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "DSR", "12/04/2026": "DSR", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "DSR", "19/04/2026": "DSR", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "DSR", "26/04/2026": "DSR", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "EVERTON FRUTUOSO DO NASCIMENTO"}, {"Nome do colaborador(a)": "FRANCIELE BARBOSA FERREIRA GN34477", "Station ID": "7203", "Código": "GN34477", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T1_A_5X2_2_0812_17", "Admissão": "15/01/2026", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "P", "05/04/2026": "DSR", "06/04/2026": "DSR", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "FRANCIELE BARBOSA FERREIRA"}, {"Nome do colaborador(a)": "DAVI FARIAS DA SILVA GN33692", "Station ID": "7203", "Código": "GN33692", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T1_A_5X2_2_0812_17", "Admissão": "08/01/2026", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "P", "05/04/2026": "DSR", "06/04/2026": "DSR", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "DAVI FARIAS DA SILVA"}, {"Nome do colaborador(a)": "CARLOS HENRIQUE QUEIROZ DA SILVA GN33635", "Station ID": "7203", "Código": "GN33635", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T1_A_5X2_2_0812_17", "Admissão": "08/01/2026", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "P", "05/04/2026": "DSR", "06/04/2026": "DSR", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "CARLOS HENRIQUE QUEIROZ DA SILVA"}, {"Nome do colaborador(a)": "VANESSA GANDUR NASCIMENTO GUILHEM SPXBR30838", "Station ID": "7203", "Código": "SPXBR30838", "BPO": "SPX", "Contrato": "CLT", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T1_A_5X2_1_0800_67", "Admissão": "16/09/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "DSR", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "S1", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "DSR", "12/04/2026": "DSR", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "DSR", "19/04/2026": "DSR", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "DSR", "26/04/2026": "DSR", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "VANESSA GANDUR NASCIMENTO GUILHEM"}, {"Nome do colaborador(a)": "YNGRID DOS SANTOS SILVA GN26448", "Station ID": "7203", "Código": "GN26448", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T1_A_5X2_2_0812_17", "Admissão": "13/11/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "P", "05/04/2026": "DSR", "06/04/2026": "DSR", "07/04/2026": "S1", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "YNGRID DOS SANTOS SILVA"}, {"Nome do colaborador(a)": "RICARDO BHERING GONCALVES GN35308", "Station ID": "7203", "Código": "GN35308", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T1_A_5X2_2_0812_17", "Admissão": "22/01/2026", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "DF", "04/04/2026": "DF", "05/04/2026": "DF", "06/04/2026": "DF", "07/04/2026": "DF", "08/04/2026": "DF", "09/04/2026": "DF", "10/04/2026": "DF", "11/04/2026": "DF", "12/04/2026": "DF", "13/04/2026": "DF", "14/04/2026": "DF", "15/04/2026": "DF", "16/04/2026": "DF", "17/04/2026": "DF", "18/04/2026": "DF", "19/04/2026": "DF", "20/04/2026": "DF", "21/04/2026": "DF", "22/04/2026": "DF", "23/04/2026": "DF", "24/04/2026": "DF", "25/04/2026": "DF", "26/04/2026": "DF", "27/04/2026": "DF", "28/04/2026": "DF", "29/04/2026": "DF", "30/04/2026": "DF", "Nome": "RICARDO BHERING GONCALVES"}, {"Nome do colaborador(a)": "THABATA MAGNUSSON GN35042", "Station ID": "7203", "Código": "GN35042", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T1_A_5X2_2_0812_17", "Admissão": "29/01/2026", "Desligamento": "", "01/04/2026": "F", "02/04/2026": "DF", "03/04/2026": "DF", "04/04/2026": "DF", "05/04/2026": "DF", "06/04/2026": "DF", "07/04/2026": "DF", "08/04/2026": "DF", "09/04/2026": "DF", "10/04/2026": "DF", "11/04/2026": "DF", "12/04/2026": "DF", "13/04/2026": "DF", "14/04/2026": "DF", "15/04/2026": "DF", "16/04/2026": "DF", "17/04/2026": "DF", "18/04/2026": "DF", "19/04/2026": "DF", "20/04/2026": "DF", "21/04/2026": "DF", "22/04/2026": "DF", "23/04/2026": "DF", "24/04/2026": "DF", "25/04/2026": "DF", "26/04/2026": "DF", "27/04/2026": "DF", "28/04/2026": "DF", "29/04/2026": "DF", "30/04/2026": "DF", "Nome": "THABATA MAGNUSSON"}, {"Nome do colaborador(a)": "RAYSSA CAMPOS DA SILVA GN35673", "Station ID": "7203", "Código": "GN35673", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T1_A_5X2_2_0812_17", "Admissão": "29/01/2026", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "FO", "04/04/2026": "P", "05/04/2026": "DSR", "06/04/2026": "DSR", "07/04/2026": "P", "08/04/2026": "AM", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "RAYSSA CAMPOS DA SILVA"}, {"Nome do colaborador(a)": "TAUANE CRISTINA GOMES COSTA GN34470", "Station ID": "7203", "Código": "GN34470", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T1_A_5X2_2_0812_17", "Admissão": "29/01/2026", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "P", "05/04/2026": "DSR", "06/04/2026": "DSR", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "TAUANE CRISTINA GOMES COSTA"}, {"Nome do colaborador(a)": "LARISSA GONCALVES LEAO GN36364", "Station ID": "7203", "Código": "GN36364", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T1_A_5X2_2_0812_17", "Admissão": "05/02/2026", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "P", "05/04/2026": "DSR", "06/04/2026": "DSR", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "LARISSA GONCALVES LEAO"}, {"Nome do colaborador(a)": "ALINE LOURDES SENA MARTINS GN36362", "Station ID": "7203", "Código": "GN36362", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T1_A_5X2_2_0812_17", "Admissão": "05/02/2026", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "P", "05/04/2026": "DSR", "06/04/2026": "DSR", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "ALINE LOURDES SENA MARTINS"}, {"Nome do colaborador(a)": "EDUARDO ARAUJO RODRIGUES GN33917", "Station ID": "7203", "Código": "GN33917", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T1_A_5X2_1_0800_67", "Admissão": "12/01/2026", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "FO", "04/04/2026": "DSR", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "S1", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "DSR", "12/04/2026": "DSR", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "DSR", "19/04/2026": "DSR", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "DSR", "26/04/2026": "DSR", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "EDUARDO ARAUJO RODRIGUES"}, {"Nome do colaborador(a)": "MARTA PAULINA DINIZ GOMES SPXBR29786", "Station ID": "7203", "Código": "SPXBR29786", "BPO": "SPX", "Contrato": "CLT", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA I", "Turno": "T1_A_5X2_1_0800_67", "Admissão": "12/08/2025", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "DSR", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "S1", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "DSR", "12/04/2026": "DSR", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "DSR", "19/04/2026": "DSR", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "DSR", "26/04/2026": "DSR", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "MARTA PAULINA DINIZ GOMES"}, {"Nome do colaborador(a)": "RAFAELA SILVA DOS SANTOS GN38884", "Station ID": "7203", "Código": "GN38884", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "Jhadine", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T1_A_5X2_2_0812_17", "Admissão": "05/03/2026", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "P", "05/04/2026": "DSR", "06/04/2026": "DSR", "07/04/2026": "AM", "08/04/2026": "S1", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "RAFAELA SILVA DOS SANTOS"}, {"Nome do colaborador(a)": "JAQUELINE MARTINS DA SILVA GN41568", "Station ID": "7203", "Código": "Não encontrado, contate WFM", "BPO": "Não encontrado, contate WFM", "Contrato": "Não encontrado, contate WFM", "Lider": "Jhadine", "Cargo": "Não encontrado, contate WFM", "Turno": "Não encontrado, contate WFM", "Admissão": "Não encontrado, contate WFM", "Desligamento": "", "01/04/2026": "NC", "02/04/2026": "NC", "03/04/2026": "P", "04/04/2026": "P", "05/04/2026": "DSR", "06/04/2026": "DSR", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "JAQUELINE MARTINS DA SILVA"}, {"Nome do colaborador(a)": "RAQUEL DOS SANTOS FRANCISCO GN36999", "Station ID": "7203", "Código": "GN36999", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "Jhadine PM2", "Cargo": "FISCAL DE PATIO", "Turno": "T1_A_6X1_1_1200_7", "Admissão": "12/02/2026", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "FO", "04/04/2026": "P", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "RAQUEL DOS SANTOS FRANCISCO"}, {"Nome do colaborador(a)": "ROSILENE ALVES DE SOUZA GN36997", "Station ID": "7203", "Código": "GN36997", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "Jhadine PM2", "Cargo": "FISCAL DE PATIO", "Turno": "T1_A_6X1_1_1200_7", "Admissão": "12/02/2026", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "P", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "AM", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "ROSILENE ALVES DE SOUZA"}, {"Nome do colaborador(a)": "ANDREA MATOS VIANA GN33666", "Station ID": "7203", "Código": "GN33666", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "Jhadine PM2", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T2_A_6X1_1_1600_7", "Admissão": "08/01/2026", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "P", "04/04/2026": "P", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "ANDREA MATOS VIANA"}, {"Nome do colaborador(a)": "MICHELLE REGINA MALDONADO GN33818", "Station ID": "7203", "Código": "GN33818", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "Jhadine PM2", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T2_A_6X1_1_1600_7", "Admissão": "08/01/2026", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "FO", "04/04/2026": "P", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "MICHELLE REGINA MALDONADO"}, {"Nome do colaborador(a)": "DOUGLAS EDUARDO DIAS GN33661", "Station ID": "7203", "Código": "GN33661", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "Jhadine PM2", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T2_A_6X1_1_1600_7", "Admissão": "08/01/2026", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "FO", "04/04/2026": "P", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "DOUGLAS EDUARDO DIAS"}, {"Nome do colaborador(a)": "ROGERIO ALVES DA SILVA GN33668", "Station ID": "7203", "Código": "GN33668", "BPO": "GNX", "Contrato": "TEMPORÁRIO", "Lider": "Jhadine PM2", "Cargo": "AUXILIAR DE LOGISTICA", "Turno": "T3_A_5X2_1_2100_67", "Admissão": "08/01/2026", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "DF", "04/04/2026": "DF", "05/04/2026": "DF", "06/04/2026": "DF", "07/04/2026": "DF", "08/04/2026": "DF", "09/04/2026": "DF", "10/04/2026": "DF", "11/04/2026": "DF", "12/04/2026": "DF", "13/04/2026": "DF", "14/04/2026": "DF", "15/04/2026": "DF", "16/04/2026": "DF", "17/04/2026": "DF", "18/04/2026": "DF", "19/04/2026": "DF", "20/04/2026": "DF", "21/04/2026": "DF", "22/04/2026": "DF", "23/04/2026": "DF", "24/04/2026": "DF", "25/04/2026": "DF", "26/04/2026": "DF", "27/04/2026": "DF", "28/04/2026": "DF", "29/04/2026": "DF", "30/04/2026": "DF", "Nome": "ROGERIO ALVES DA SILVA"}, {"Nome do colaborador(a)": "JULIANA RAMALHO DA SILVA GN39723", "Station ID": "7203", "Código": "Não encontrado, contate WFM", "BPO": "Não encontrado, contate WFM", "Contrato": "Não encontrado, contate WFM", "Lider": "Jhadine PM2", "Cargo": "Não encontrado, contate WFM", "Turno": "Não encontrado, contate WFM", "Admissão": "Não encontrado, contate WFM", "Desligamento": "", "01/04/2026": "P", "02/04/2026": "P", "03/04/2026": "FO", "04/04/2026": "P", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "JULIANA RAMALHO DA SILVA"}, {"Nome do colaborador(a)": "DENYS DAVID SILVA DIAS GN41711", "Station ID": "7203", "Código": "Não encontrado, contate WFM", "BPO": "Não encontrado, contate WFM", "Contrato": "Não encontrado, contate WFM", "Lider": "Jhadine PM2", "Cargo": "Não encontrado, contate WFM", "Turno": "Não encontrado, contate WFM", "Admissão": "Não encontrado, contate WFM", "Desligamento": "", "01/04/2026": "NC", "02/04/2026": "NC", "03/04/2026": "P", "04/04/2026": "P", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "DENYS DAVID SILVA DIAS"}, {"Nome do colaborador(a)": "RAFAEL SANTANA VICENTE GN41709", "Station ID": "7203", "Código": "Não encontrado, contate WFM", "BPO": "Não encontrado, contate WFM", "Contrato": "Não encontrado, contate WFM", "Lider": "Jhadine PM2", "Cargo": "Não encontrado, contate WFM", "Turno": "Não encontrado, contate WFM", "Admissão": "Não encontrado, contate WFM", "Desligamento": "", "01/04/2026": "NC", "02/04/2026": "NC", "03/04/2026": "P", "04/04/2026": "P", "05/04/2026": "DSR", "06/04/2026": "P", "07/04/2026": "P", "08/04/2026": "P", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": "RAFAEL SANTANA VICENTE"}, {"Nome do colaborador(a)": "TESYE", "Station ID": "", "Código": "", "BPO": "", "Contrato": "", "Lider": "", "Cargo": "", "Turno": "", "Admissão": "", "Desligamento": "", "01/04/2026": "", "02/04/2026": "", "03/04/2026": "", "04/04/2026": "", "05/04/2026": "", "06/04/2026": "", "07/04/2026": "", "08/04/2026": "", "09/04/2026": "", "10/04/2026": "", "11/04/2026": "", "12/04/2026": "", "13/04/2026": "", "14/04/2026": "", "15/04/2026": "", "16/04/2026": "", "17/04/2026": "", "18/04/2026": "", "19/04/2026": "", "20/04/2026": "", "21/04/2026": "", "22/04/2026": "", "23/04/2026": "", "24/04/2026": "", "25/04/2026": "", "26/04/2026": "", "27/04/2026": "", "28/04/2026": "", "29/04/2026": "", "30/04/2026": "", "Nome": ""}];
+
+        function initializeFilters() {
+            const allBPOs = [...new Set(collaboratorsData.map(c => c.BPO))].sort();
+            const allStatuses = getAllStatuses();
+
+            const bpoOptions = document.getElementById('bpoOptions');
+            allBPOs.forEach(bpo => {
+                const div = document.createElement('div');
+                div.className = 'filter-option';
+                div.innerHTML = `
+                    <input type="checkbox" id="bpo-${bpo}" value="${bpo}" onchange="applyFilters()">
+                    <label for="bpo-${bpo}">${bpo}</label>
+                `;
+                bpoOptions.appendChild(div);
+            });
+
+            const statusOptions = document.getElementById('statusOptions');
+            allStatuses.forEach(status => {
+                const div = document.createElement('div');
+                div.className = 'filter-option';
+                div.innerHTML = `
+                    <input type="checkbox" id="status-${status}" value="${status}" onchange="applyFilters()">
+                    <label for="status-${status}">${status}</label>
+                `;
+                statusOptions.appendChild(div);
+            });
+        }
+
+        function getAllStatuses() {
+            const statuses = new Set();
+            collaboratorsData.forEach(c => {
+                for (let i = 1; i <= 30; i++) {
+                    const date = `${String(i).padStart(2, '0')}/04/2026`;
+                    const status = c[date];
+                    if (status) statuses.add(status);
+                }
+            });
+            return Array.from(statuses).sort();
+        }
+
+        function toggleSection(element) {
+            element.classList.toggle('collapsed');
+            const options = element.nextElementSibling;
+            if (options) {
+                options.style.display = options.style.display === 'none' ? 'flex' : 'none';
+            }
+        }
+
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const selectedBPOs = Array.from(document.querySelectorAll('#bpoOptions input:checked')).map(c => c.value);
+            const selectedStatuses = Array.from(document.querySelectorAll('#statusOptions input:checked')).map(c => c.value);
+
+            const filtered = collaboratorsData.filter(c => {
+                const matchesSearch = c.Código.toLowerCase().includes(searchTerm) || 
+                                     c.Nome.toLowerCase().includes(searchTerm);
+                const matchesBPO = selectedBPOs.length === 0 || selectedBPOs.includes(c.BPO);
+                
+                let matchesStatus = selectedStatuses.length === 0;
+                if (selectedStatuses.length > 0) {
+                    for (let i = 1; i <= 30; i++) {
+                        const date = `${String(i).padStart(2, '0')}/04/2026`;
+                        if (selectedStatuses.includes(c[date])) {
+                            matchesStatus = true;
+                            break;
+                        }
+                    }
+                }
+
+                return matchesSearch && matchesBPO && matchesStatus;
+            });
+
+            renderCollaborators(filtered);
+            updateResultCount(filtered.length);
+            updateClearButton();
+        }
+
+        function renderCollaborators(data) {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            data.forEach(c => {
+                const row = document.createElement('tr');
+                
+                let statusCells = '';
+                for (let i = 1; i <= 30; i++) {
+                    const date = `${String(i).padStart(2, '0')}/04/2026`;
+                    const status = c[date] || '';
+                    statusCells += `<td>${status ? `<span class="status-badge ${status}">${status}</span>` : ''}</td>`;
+                }
+
+                row.innerHTML = `
+                    <td>${c.Nome}</td>
+                    <td>${c.Código}</td>
+                    <td>${c.BPO}</td>
+                    <td>${c.Cargo.substring(0, 20)}</td>
+                    <td>${c.Contrato.substring(0, 10)}</td>
+                    <td>${c.Admissão}</td>
+                    <td>${c.Lider || '—'}</td>
+                    <td>${c.Turno.substring(0, 15)}</td>
+                    ${statusCells}
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateResultCount(count) {
+            document.getElementById('resultCount').textContent = `${count} resultado${count !== 1 ? 's' : ''}`;
+        }
+
+        function updateClearButton() {
+            const hasFilters = document.querySelectorAll('input[type="checkbox"]:checked').length > 0 || 
+                             document.getElementById('searchInput').value.length > 0;
+            document.getElementById('clearBtn').style.display = hasFilters ? 'block' : 'none';
+        }
+
+        function updateAnalytics() {
+            const today = new Date();
+            const todayStr = `${String(today.getDate()).padStart(2, '0')}/04/2026`;
+            
+            let presentCount = 0, absentCount = 0, leaveCount = 0;
+
+            collaboratorsData.forEach(c => {
+                const status = c[todayStr];
+                if (status === 'P') presentCount++;
+                else if (status === 'FO') absentCount++;
+                else if (['DSR', 'DF', 'DV', 'FE', 'AL'].includes(status)) leaveCount++;
+            });
+
+            document.getElementById('presentCount').textContent = presentCount;
+            document.getElementById('absentCount').textContent = absentCount;
+            document.getElementById('leaveCount').textContent = leaveCount;
+            document.getElementById('presentPercent').textContent = `${Math.round(presentCount / collaboratorsData.length * 100)}% de presença`;
+        }
+
+        // Event Listeners
+        document.getElementById('searchInput').addEventListener('input', applyFilters);
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
+            document.getElementById('searchInput').value = '';
+            applyFilters();
+        });
+
+        // Initialize
+        initializeFilters();
+        renderCollaborators(collaboratorsData);
+        updateAnalytics();
+    </script>
+</body>
+</html>
