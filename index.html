@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sênior Analytics • Gestão de Backlog Carandiru</title>
-    <link rel="icon" href="https://cdn.awsli.com.br/800x800/2015/2015798/produto/354645871/shoppe--2--mvj1hgvttt.png">
+    <title>Shopee Logistics • Dashboard Carandiru</title>
+    <link rel="icon" href="https://deo.shopeemobile.com/shopee/shopee-pcmall-live-sg/assets/icon_favicon_1_32.png">
     
-    <!-- Google Fonts: Inter -->
+    <!-- Google Fonts: Shopee usa algo similar ao Inter/Roboto -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Lucide Icons -->
@@ -14,587 +14,391 @@
     
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
 
     <style>
         :root {
             --shopee-orange: #EE4D2D;
-            --shopee-orange-light: #FFF5F1;
-            --shopee-bg: #F0F2F5;
+            --shopee-orange-hover: #D73211;
+            --shopee-bg: #F5F5F5;
             --shopee-white: #FFFFFF;
-            --shopee-text-main: #1C1E21;
-            --shopee-text-muted: #606770;
-            --shopee-border: #DADDE1;
-            --shopee-shadow: 0 12px 28px 0 rgba(0, 0, 0, 0.1), 0 2px 4px 0 rgba(0, 0, 0, 0.05);
-            --radius: 12px;
-            
-            /* Category Colors */
-            --color-amarelo: #F5C518;
-            --color-erro: #EE4D2D;
-            --color-onhold: #0055AA;
-            --color-fleet: #26AA99;
-            --color-office: #64748B;
+            --shopee-text-main: #222222;
+            --shopee-text-muted: #757575;
+            --shopee-border: #E8E8E8;
+            --shopee-shadow: 0 1px 1px 0 rgba(0,0,0,.05);
+            --radius: 4px; /* Shopee usa cantos menos arredondados em botões/cards corporativos */
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', -apple-system, Helvetica Neue, Helvetica, Roboto, Arial, sans-serif;
             background-color: var(--shopee-bg);
             color: var(--shopee-text-main);
-            line-height: 1.6;
-            padding: 24px;
+            line-height: 1.5;
             -webkit-font-smoothing: antialiased;
         }
 
-        .container { max-width: 100%; margin: 0 auto; }
+        /* --- SHOPEE HEADER --- */
+        .shopee-header {
+            background-color: var(--shopee-orange);
+            height: 120px;
+            width: 100%;
+            padding: 0 10%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
 
-        /* --- HEADER SÊNIOR --- */
-        header {
-            background: var(--shopee-white);
-            padding: 24px 40px;
+        .shopee-logo-container { display: flex; align-items: center; gap: 15px; }
+        .shopee-logo { height: 42px; filter: brightness(0) invert(1); }
+        .shopee-divider { width: 1px; height: 30px; background: rgba(255,255,255,0.3); }
+        .shopee-title { font-size: 20px; font-weight: 500; }
+
+        .user-info { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 500; }
+        .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; }
+
+        /* --- MAIN CONTENT --- */
+        .main-container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
+
+        /* --- SHOPEE TABS --- */
+        .shopee-tabs {
+            display: flex;
+            background: white;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--shopee-border);
+            box-shadow: var(--shopee-shadow);
+        }
+
+        .shopee-tab-btn {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: var(--shopee-text-main);
+            font-weight: 400;
+            position: relative;
+            transition: color 0.2s;
+        }
+
+        .shopee-tab-btn.active { color: var(--shopee-orange); font-weight: 500; }
+        .shopee-tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--shopee-orange);
+        }
+
+        /* --- CARDS & KPIS --- */
+        .shopee-card {
+            background: white;
+            padding: 24px;
             border-radius: var(--radius);
             box-shadow: var(--shopee-shadow);
-            margin-bottom: 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-top: 4px solid var(--shopee-orange);
+            margin-bottom: 20px;
         }
 
-        .header-info h1 {
-            font-size: 28px;
-            font-weight: 800;
-            color: var(--shopee-text-main);
-            letter-spacing: -0.5px;
-        }
-
-        .header-info p {
-            font-size: 14px;
-            color: var(--shopee-text-muted);
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 4px;
-        }
-
-        .shopee-logo { height: 36px; }
-
-        /* --- NAVIGATION --- */
-        .nav-tabs {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 24px;
-            background: white;
-            padding: 8px;
-            border-radius: 12px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .nav-btn {
-            padding: 12px 24px;
-            border: none;
-            background: transparent;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: 14px;
-            color: var(--shopee-text-muted);
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .nav-btn:hover { background: #F2F3F5; }
-
-        .nav-btn.active {
-            background: var(--shopee-orange-light);
-            color: var(--shopee-orange);
-        }
-
-        .tab-content { display: none; animation: fadeIn 0.3s ease; }
-        .tab-content.active { display: block; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* --- KPI CARDS --- */
         .kpi-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 20px;
-            margin-bottom: 24px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
         }
 
         .kpi-card {
-            background: var(--shopee-white);
-            padding: 24px;
-            border-radius: var(--radius);
-            box-shadow: var(--shopee-shadow);
-            position: relative;
-        }
-
-        .kpi-label { font-size: 12px; color: var(--shopee-text-muted); font-weight: 700; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-        .kpi-value { font-size: 32px; font-weight: 800; color: var(--shopee-text-main); }
-        .kpi-sub { font-size: 12px; color: var(--shopee-text-muted); margin-top: 8px; font-weight: 600; }
-
-        /* --- SECTION TITLE --- */
-        .section-title { font-size: 18px; font-weight: 800; margin: 32px 0 16px 0; display: flex; align-items: center; gap: 12px; color: var(--shopee-text-main); }
-
-        /* --- DASHBOARD CARDS --- */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 24px;
-            margin-bottom: 24px;
-        }
-
-        .card-main {
-            background: var(--shopee-white);
-            padding: 32px;
-            border-radius: var(--radius);
-            box-shadow: var(--shopee-shadow);
-        }
-
-        .card-title { font-size: 18px; font-weight: 800; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
-
-        /* --- MATRIZ SÊNIOR --- */
-        .matrix-container {
-            width: 100%;
-            overflow-x: auto;
-            border-radius: 8px;
-            border: 1px solid var(--shopee-border);
             background: white;
+            padding: 20px;
+            border-radius: var(--radius);
+            box-shadow: var(--shopee-shadow);
+            border: 1px solid #f0f0f0;
         }
 
-        table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        th { background: #F8F9FA; padding: 12px 8px; font-weight: 800; color: var(--shopee-text-muted); text-transform: uppercase; text-align: center; border-bottom: 2px solid var(--shopee-border); border-right: 1px solid #eee; }
-        td { padding: 8px; border-bottom: 1px solid #F0F2F5; border-right: 1px solid #F0F2F5; text-align: center; }
-        
-        .sticky-col { position: sticky; left: 0; background: white; z-index: 10; border-right: 2px solid var(--shopee-border); text-align: left; padding-left: 16px; min-width: 250px; }
-        th.sticky-col { background: #F8F9FA; }
+        .kpi-label { font-size: 14px; color: var(--shopee-text-muted); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .kpi-value { font-size: 28px; font-weight: 600; color: var(--shopee-orange); }
+        .kpi-footer { font-size: 12px; color: #999; margin-top: 10px; border-top: 1px solid #f5f5f5; padding-top: 10px; }
 
-        .matrix-code {
+        /* --- TABLES --- */
+        .shopee-table-container { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #fafafa; padding: 12px; text-align: left; font-size: 14px; color: #757575; font-weight: 500; border-bottom: 1px solid #eee; }
+        td { padding: 16px 12px; border-bottom: 1px solid #f5f5f5; font-size: 14px; }
+        tr:hover { background: #fafafa; }
+
+        .sticky-col { position: sticky; left: 0; background: white; z-index: 10; border-right: 1px solid #eee; min-width: 200px; }
+        th.sticky-col { background: #fafafa; }
+
+        /* --- MATRIX CODES --- */
+        .code-badge {
+            width: 28px; height: 28px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: white; margin: 0 auto;
+        }
+        .bg-AM { background: #26aa99; } /* Shopee Green */
+        .bg-F { background: #ee4d2d; }  /* Shopee Orange */
+        .bg-SU { background: #ffba00; } /* Yellow */
+        .bg-FE { background: #5a31f4; } /* Purple */
+        .bg-P { background: #f5f5f5; color: #ccc; font-weight: 400; }
+
+        /* --- INSIGHTS SECTION --- */
+        .insight-banner {
+            background: #fff5f1;
+            border: 1px solid rgba(238, 77, 45, 0.2);
+            padding: 15px 20px;
+            border-radius: var(--radius);
+            margin-bottom: 20px;
             display: flex;
             align-items: center;
-            justify-content: center;
-            width: 32px;
-            height: 32px;
-            margin: 0 auto;
-            border-radius: 6px;
-            font-size: 10px;
-            font-weight: 800;
+            gap: 15px;
+            color: var(--shopee-orange);
+            font-size: 14px;
+            font-weight: 500;
         }
 
-        /* --- LEGENDA SÊNIOR (FULL) --- */
-        .full-legend {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 10px;
-            margin-top: 24px;
-            padding: 24px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: var(--shopee-shadow);
-        }
+        /* --- CHARTS --- */
+        .chart-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 20px; }
+        @media (max-width: 900px) { .chart-grid { grid-template-columns: 1fr; } }
 
-        .legend-item { display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 600; color: var(--shopee-text-muted); }
-        .legend-box { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; color: white; flex-shrink: 0; }
+        .chart-card { background: white; padding: 20px; border-radius: var(--radius); box-shadow: var(--shopee-shadow); }
+        .chart-title { font-size: 16px; font-weight: 500; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #f5f5f5; }
 
-        /* Cores da Legenda */
-        .bg-AM { background: #10B981; } .bg-AF, .bg-AL { background: #3B82F6; } .bg-BH { background: #64748B; }
-        .bg-DF, .bg-DP, .bg-DV { background: #EF4444; } .bg-DSR { background: #94A3B8; } .bg-F { background: #B91C1C; }
-        .bg-FE { background: #8B5CF6; } .bg-FJ { background: #10B981; opacity: 0.7; } .bg-FO { background: #6B7280; }
-        .bg-NC, .bg-NS { background: #4B5563; } .bg-P { background: #E2E8F0; color: #64748B; } .bg-PR { background: #F59E0B; }
-        .bg-S1, .bg-S2 { background: #F97316; } .bg-TR, .bg-TD { background: #06B6D4; } .bg-SU { background: #D97706; }
-        .bg-FC { background: #475569; } .bg-IN { background: #059669; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.2s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* --- FILTERS --- */
-        .filter-section {
-            display: flex;
-            gap: 16px;
-            margin-bottom: 20px;
-            background: white;
-            padding: 16px 24px;
-            border-radius: 12px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .filter-item { display: flex; flex-direction: column; gap: 4px; flex: 1; }
-        .filter-item label { font-size: 11px; font-weight: 800; color: var(--shopee-text-muted); text-transform: uppercase; }
-        .filter-item input, .filter-item select { padding: 10px; border-radius: 8px; border: 1px solid var(--shopee-border); font-family: inherit; font-size: 13px; }
-
-        footer { text-align: center; padding: 48px 0; color: var(--shopee-text-muted); font-size: 13px; font-weight: 600; }
-
-        @media (max-width: 1024px) {
-            .dashboard-grid { grid-template-columns: 1fr; }
-        }
+        footer { text-align: center; padding: 40px 0; color: #999; font-size: 12px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <header>
-        <div class="header-info">
-            <h1>Sênior Intelligence • Gestão de Backlog Carandiru</h1>
-            <p><i data-lucide="shield-check" size="16"></i> Relatório de Nível Executivo • 30/03 a 12/04 • Emanuel Brendon</p>
-        </div>
+<header class="shopee-header">
+    <div class="shopee-logo-container">
         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Shopee_logo.svg/1200px-Shopee_logo.svg.png" alt="Shopee" class="shopee-logo">
-    </header>
+        <div class="shopee-divider"></div>
+        <div class="shopee-title">Central de Gestão Carandiru</div>
+    </div>
+    <div class="user-info">
+        <div class="user-avatar"><i data-lucide="user" size="18"></i></div>
+        <span>Emanuel Brendon</span>
+        <i data-lucide="chevron-down" size="16"></i>
+    </div>
+</header>
 
-    <div class="nav-tabs">
-        <button class="nav-btn active" onclick="openTab('frequency-matrix')"><i data-lucide="users" size="18"></i> Matriz de Frequência 360°</button>
-        <button class="nav-btn" onclick="openTab('backlog-analytics')"><i data-lucide="bar-chart-3" size="18"></i> Inteligência de Backlog</button>
-        <button class="nav-btn" onclick="openTab('daily-history')"><i data-lucide="calendar" size="18"></i> Histórico Diário</button>
+<div class="main-container">
+    
+    <div class="insight-banner">
+        <i data-lucide="megaphone" size="20"></i>
+        <span><strong>Resumo Sênior:</strong> Foram identificados 5 alertas críticos de AM no ciclo atual. O backlog atingiu pico de 5.8k em 03/04.</span>
     </div>
 
-    <!-- TAB: MATRIZ DE FREQUÊNCIA 360° -->
-    <div id="frequency-matrix" class="tab-content active">
-        <div class="kpi-grid">
-            <div class="kpi-card">
-                <div class="kpi-label"><i data-lucide="heart-pulse" size="14"></i> Total AM (Atestados)</div>
-                <div id="kpi-matrix-am" class="kpi-value">0</div>
-                <div class="kpi-sub">Total de atestados médicos no período</div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-label"><i data-lucide="user-minus" size="14"></i> Total F (Faltas)</div>
-                <div id="kpi-matrix-f" class="kpi-value">0</div>
-                <div class="kpi-sub">Faltas injustificadas registradas</div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-label"><i data-lucide="alert-circle" size="14"></i> Total SU (Suspensões)</div>
-                <div id="kpi-matrix-su" class="kpi-value">0</div>
-                <div class="kpi-sub">Medidas disciplinares aplicadas</div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-label"><i data-lucide="users" size="14"></i> Base de Colaboradores</div>
-                <div id="kpi-matrix-total" class="kpi-value">0</div>
-                <div class="kpi-sub">Colaboradores ativos na matriz</div>
-            </div>
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-label"><i data-lucide="users" size="16"></i> Base Disponível</div>
+            <div class="kpi-value" id="val-base">30</div>
+            <div class="kpi-footer">23 Ativos | 7 Afastados</div>
         </div>
-
-        <div class="filter-section">
-            <div class="filter-item">
-                <label>Buscar Colaborador</label>
-                <input type="text" id="search-name" placeholder="Nome, ID ou Cargo..." oninput="renderMatrix()">
-            </div>
-            <div class="filter-item">
-                <label>Filtrar por Status Principal</label>
-                <select id="filter-status" onchange="renderMatrix()">
-                    <option value="all">Todos os Status</option>
-                    <option value="AM">Atestado Médico (AM)</option>
-                    <option value="F">Faltas (F)</option>
-                    <option value="SU">Suspensão (SU)</option>
-                    <option value="FE">Férias (FE)</option>
-                    <option value="S1">Sinergia (S1/S2)</option>
-                </select>
-            </div>
+        <div class="kpi-card">
+            <div class="kpi-label"><i data-lucide="package" size="16"></i> Backlog Total</div>
+            <div class="kpi-value" id="val-backlog">15.3k</div>
+            <div class="kpi-footer">Média: 1.1k / dia</div>
         </div>
-
-        <div class="matrix-container">
-            <table id="senior-matrix">
-                <thead>
-                    <tr id="matrix-header">
-                        <th class="sticky-col">Colaborador</th>
-                        <!-- Dias serão injetados -->
-                        <th style="background: #F0F2F5">AM</th>
-                        <th style="background: #F0F2F5">F</th>
-                        <th style="background: #F0F2F5">SU</th>
-                    </tr>
-                </thead>
-                <tbody id="matrix-body"></tbody>
-            </table>
+        <div class="kpi-card">
+            <div class="kpi-label"><i data-lucide="activity" size="16"></i> Absenteísmo</div>
+            <div class="kpi-value" id="val-abs">14.0%</div>
+            <div class="kpi-footer">14 AMs | 6 Faltas</div>
         </div>
-
-        <div class="section-title"><i data-lucide="list" size="18"></i> Legenda de Categorias Sênior (23 Status)</div>
-        <div class="full-legend" id="full-legend">
-            <!-- Legenda será injetada -->
+        <div class="kpi-card">
+            <div class="kpi-label"><i data-lucide="trending-up" size="16"></i> Eficiência</div>
+            <div class="kpi-value">92.4%</div>
+            <div class="kpi-footer">Status: Atenção</div>
         </div>
     </div>
 
-    <!-- TAB: INTELIGÊNCIA DE BACKLOG -->
-    <div id="backlog-analytics" class="tab-content">
-        <div class="kpi-grid">
-            <div class="kpi-card">
-                <div class="kpi-label">Volume Total Acumulado</div>
-                <div id="kpi-backlog-total" class="kpi-value">0</div>
+    <nav class="shopee-tabs">
+        <button class="shopee-tab-btn active" onclick="openTab('analytics')">Análise de Performance</button>
+        <button class="shopee-tab-btn" onclick="openTab('matrix')">Matriz de Frequência</button>
+        <button class="shopee-tab-btn" onclick="openTab('history')">Histórico Operacional</button>
+    </nav>
+
+    <!-- TAB: ANALYTICS -->
+    <div id="analytics" class="tab-content active">
+        <div class="chart-grid">
+            <div class="chart-card">
+                <div class="chart-title">Evolução de Backlog vs Ausências</div>
+                <div style="height: 300px;"><canvas id="chart-main"></canvas></div>
             </div>
-            <div class="kpi-card">
-                <div class="kpi-label">Média de Processamento</div>
-                <div id="kpi-backlog-avg" class="kpi-value">0</div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-label">Variação Semanal</div>
-                <div id="kpi-backlog-trend" class="kpi-value">0%</div>
+            <div class="chart-card">
+                <div class="chart-title">Mix de Backlog</div>
+                <div style="height: 300px;"><canvas id="chart-mix"></canvas></div>
             </div>
         </div>
-
-        <div class="dashboard-grid">
-            <div class="card-main">
-                <div class="card-title"><i data-lucide="trending-up" size="20" style="color: var(--shopee-orange)"></i> Evolução de Backlog (14 Dias)</div>
-                <div style="height: 350px;">
-                    <canvas id="evolutionChart"></canvas>
-                </div>
+        <div class="chart-grid" style="grid-template-columns: 1fr 1fr;">
+            <div class="chart-card">
+                <div class="chart-title">Motivos de Ausência</div>
+                <div style="height: 250px;"><canvas id="chart-reasons"></canvas></div>
             </div>
-            <div class="card-main">
-                <div class="card-title"><i data-lucide="pie-chart" size="20" style="color: var(--shopee-orange)"></i> Mix de Categorias</div>
-                <div style="height: 350px;">
-                    <canvas id="mixChart"></canvas>
+            <div class="chart-card">
+                <div class="chart-title">Insights de Produtividade</div>
+                <div style="font-size: 14px; color: #555;">
+                    <p style="margin-bottom: 10px;">• Dias com >3 AMs apresentam aumento de 15% no backlog de <strong>Erro Op</strong>.</p>
+                    <p style="margin-bottom: 10px;">• O pico de <strong>Office</strong> em 03/04 coincidiu com 4 afastamentos simultâneos.</p>
+                    <p>• Sugestão: Remanejar equipe do turno T1 para T3 nos dias 06 e 07/04.</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- TAB: HISTÓRICO DIÁRIO -->
-    <div id="daily-history" class="tab-content">
-        <div class="card-main">
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Data</th>
-                            <th>Dia</th>
-                            <th>Amarelo</th>
-                            <th>Erro Op.</th>
-                            <th>On Hold</th>
-                            <th>Ret. Fleet</th>
-                            <th>Office</th>
-                            <th style="background: var(--shopee-orange-light); color: var(--shopee-orange)">Total Diário</th>
-                        </tr>
-                    </thead>
-                    <tbody id="backlog-table-body"></tbody>
+    <!-- TAB: MATRIX -->
+    <div id="matrix" class="tab-content">
+        <div class="shopee-card">
+            <div class="shopee-table-container">
+                <table id="matrix-table">
+                    <thead><tr id="matrix-head"><th class="sticky-col">Colaborador</th></tr></thead>
+                    <tbody id="matrix-body"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <footer>©️ 2026 Shopee Logistics • Gestão Sênior de Dados • Emanuel Brendon</footer>
+    <!-- TAB: HISTORY -->
+    <div id="history" class="tab-content">
+        <div class="shopee-card">
+            <div class="shopee-table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Total Pacotes</th>
+                            <th>Principal Gargalo</th>
+                            <th>Faltas/AM</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <footer>© 2026 Shopee Logistics • Internal Management Tool • Carandiru Hub</footer>
 </div>
 
 <script>
-    // --- DICIONÁRIO SÊNIOR DE LEGENDAS ---
-    const legendaFull = [
-        { code: "AF", label: "Afastamento", color: "bg-AF" },
-        { code: "AL", label: "Afastamento longo", color: "bg-AL" },
-        { code: "AM", label: "Atestado médico", color: "bg-AM" },
-        { code: "BH", label: "Banco de Horas", color: "bg-BH" },
-        { code: "DF", label: "Desligamento forçado", color: "bg-DF" },
-        { code: "DP", label: "Desligamento Programado", color: "bg-DP" },
-        { code: "DSR", label: "Descanso Semanal Remunerado", color: "bg-DSR" },
-        { code: "DV", label: "Desligamento voluntário", color: "bg-DV" },
-        { code: "F", label: "Falta Injustificada", color: "bg-F" },
-        { code: "FE", label: "Férias", color: "bg-FE" },
-        { code: "FJ", label: "Falta Justificada", color: "bg-FJ" },
-        { code: "FO", label: "Folga", color: "bg-FO" },
-        { code: "NC", label: "Não Contratado", color: "bg-NC" },
-        { code: "NS", label: "No-Show", color: "bg-NS" },
-        { code: "P", label: "Presente", color: "bg-P" },
-        { code: "PR", label: "Promoção", color: "bg-PR" },
-        { code: "S1", label: "Sinergia Enviada", color: "bg-S1" },
-        { code: "S2", label: "Sinergia Recebida", color: "bg-S2" },
-        { code: "TR", label: "Transferência", color: "bg-TR" },
-        { code: "TD", label: "Treinamento e desenvolvimento", color: "bg-TD" },
-        { code: "SU", label: "Suspensão", color: "bg-SU" },
-        { code: "FC", label: "Folga compensatória", color: "bg-FC" },
-        { code: "IN", label: "Internalização", color: "bg-IN" }
-    ];
-
-    const legendaMap = {
-        "Afastamento": "AF", "Afastamento longo": "AL", "Atestado": "AM", "Atestado médico": "AM",
-        "Banco de Horas": "BH", "Desligamento forçado": "DF", "Desligamento Programado": "DP",
-        "Descanso Semanal Remunerado": "DSR", "Desligamento voluntário": "DV", "Falta": "F",
-        "Falta Injustificada": "F", "Férias": "FE", "Falta Justificada": "FJ", "Folga": "FO",
-        "Não Contratado": "NC", "No-Show": "NS", "Presente": "P", "Promoção": "PR",
-        "Sinergia Enviada": "S1", "Sinergia Recebida": "S2", "Transferência": "TR",
-        "Treinamento e desenvolvimento": "TD", "Suspensão": "SU", "Folga compensatória": "FC",
-        "Internalização": "IN", "Diferença?": "DV", "Desvio?": "DV"
-    };
-
+    // --- DATA ---
     const days = ["30/03", "31/03", "01/04", "02/04", "03/04", "04/04", "05/04", "06/04", "07/04", "08/04", "09/04", "10/04", "11/04", "12/04"];
-
+    
     const backlogData = [
-      { "data": "30/03", "dia": "Segunda", "amarelo": 149, "erro": 233, "onhold": 502, "fleet": 272, "office": 0, "total": 1156 },
-      { "data": "31/03", "dia": "Terça", "amarelo": 51, "erro": 178, "onhold": 252, "fleet": 109, "office": 0, "total": 590 },
-      { "data": "01/04", "dia": "Quarta", "amarelo": 149, "erro": 230, "onhold": 61, "fleet": 87, "office": 0, "total": 527 },
-      { "data": "02/04", "dia": "Quinta", "amarelo": 82, "erro": 198, "onhold": 37, "fleet": 162, "office": 0, "total": 479 },
-      { "data": "03/04", "dia": "Sexta", "amarelo": 209, "erro": 361, "onhold": 2099, "fleet": 187, "office": 3010, "total": 5866 },
-      { "data": "04/04", "dia": "Sábado", "amarelo": 177, "erro": 147, "onhold": 45, "fleet": 65, "office": 2484, "total": 2918 },
-      { "data": "05/04", "dia": "Domingo", "amarelo": 57, "erro": 165, "onhold": 29, "fleet": 120, "office": 987, "total": 1358 },
-      { "data": "06/04", "dia": "Segunda", "amarelo": 503, "erro": 0, "onhold": 168, "fleet": 0, "office": 0, "total": 671 },
-      { "data": "07/04", "dia": "Terça", "amarelo": 157, "erro": 162, "onhold": 104, "fleet": 9, "office": 0, "total": 432 },
-      { "data": "08/04", "dia": "Quarta", "amarelo": 206, "erro": 151, "onhold": 147, "fleet": 83, "office": 0, "total": 587 },
-      { "data": "09/04", "dia": "Quinta", "amarelo": 237, "erro": 144, "onhold": 56, "fleet": 81, "office": 0, "total": 518 },
-      { "data": "10/04", "dia": "Sexta", "amarelo": 529, "erro": 675, "onhold": 19, "fleet": 127, "office": 0, "total": 1350 },
-      { "data": "11/04", "dia": "Sábado", "amarelo": 0, "erro": 0, "onhold": 0, "fleet": 0, "office": 0, "total": 0 },
-      { "data": "12/04", "dia": "Domingo", "amarelo": 0, "erro": 0, "onhold": 0, "fleet": 0, "office": 0, "total": 0 }
+      { "data": "30/03", "total": 1156, "amarelo": 149, "erro": 233, "onhold": 502, "fleet": 272, "office": 0 },
+      { "data": "31/03", "total": 590, "amarelo": 51, "erro": 178, "onhold": 252, "fleet": 109, "office": 0 },
+      { "data": "01/04", "total": 527, "amarelo": 149, "erro": 230, "onhold": 61, "fleet": 87, "office": 0 },
+      { "data": "02/04", "total": 479, "amarelo": 82, "erro": 198, "onhold": 37, "fleet": 162, "office": 0 },
+      { "data": "03/04", "total": 5866, "amarelo": 209, "erro": 361, "onhold": 2099, "fleet": 187, "office": 3010 },
+      { "data": "04/04", "total": 2918, "amarelo": 177, "erro": 147, "onhold": 45, "fleet": 65, "office": 2484 },
+      { "data": "05/04", "total": 1358, "amarelo": 57, "erro": 165, "onhold": 29, "fleet": 120, "office": 987 },
+      { "data": "06/04", "total": 671, "amarelo": 503, "erro": 0, "onhold": 168, "fleet": 0, "office": 0 },
+      { "data": "07/04", "total": 432, "amarelo": 157, "erro": 162, "onhold": 104, "fleet": 9, "office": 0 },
+      { "data": "08/04", "total": 587, "amarelo": 206, "erro": 151, "onhold": 147, "fleet": 83, "office": 0 },
+      { "data": "09/04", "total": 518, "amarelo": 237, "erro": 144, "onhold": 56, "fleet": 81, "office": 0 },
+      { "data": "10/04", "total": 1350, "amarelo": 529, "erro": 675, "onhold": 19, "fleet": 127, "office": 0 },
+      { "data": "11/04", "total": 0, "amarelo": 0, "erro": 0, "onhold": 0, "fleet": 0, "office": 0 },
+      { "data": "12/04", "total": 0, "amarelo": 0, "erro": 0, "onhold": 0, "fleet": 0, "office": 0 }
     ];
 
     const absData = [
-        { "nome": "SARA SIANY DO NASCIMENTO SPXBR14455", "unidade": "SPX", "cargo": "T3_A_5X2_2_0200_17", "motivos": ["Afastamento"], "total": 29, "historico": [{"data": "02/04", "motivo": "Afastamento"}, {"data": "03/04", "motivo": "Afastamento"}, {"data": "04/04", "motivo": "Afastamento"}, {"data": "05/04", "motivo": "Afastamento"}, {"data": "06/04", "motivo": "Afastamento"}, {"data": "07/04", "motivo": "Afastamento"}, {"data": "08/04", "motivo": "Afastamento"}, {"data": "09/04", "motivo": "Afastamento"}, {"data": "10/04", "motivo": "Afastamento"}, {"data": "11/04", "motivo": "Afastamento"}, {"data": "12/04", "motivo": "Afastamento"}] },
-        { "nome": "VICTORIA FEU FELIZARDO DA ROCHA GN21843", "unidade": "GNX", "cargo": "T3_A_5X2_1_2100_67", "motivos": ["Desvio?", "Atestado"], "total": 26, "historico": [{"data": "02/04", "motivo": "Atestado"}, {"data": "06/04", "motivo": "Desvio?"}, {"data": "07/04", "motivo": "Desvio?"}, {"data": "08/04", "motivo": "Desvio?"}, {"data": "09/04", "motivo": "Desvio?"}, {"data": "10/04", "motivo": "Desvio?"}, {"data": "11/04", "motivo": "Desvio?"}, {"data": "12/04", "motivo": "Desvio?"}] },
-        { "nome": "GUILHERME DA SILVA FREIRE DE OLIVEIRA SPXBR25286", "unidade": "SPX", "cargo": "T3_A_5X2_3_0200_12", "motivos": ["Falta"], "total": 2, "historico": [{"data": "04/04", "motivo": "Falta"}, {"data": "05/04", "motivo": "Falta"}] },
-        { "nome": "JOSE DENILSON PAULINO DO NASCIMENTO GN33922", "unidade": "GNX", "cargo": "T3_A_5X2_3_0200_12", "motivos": ["Atestado"], "total": 1, "historico": [{"data": "04/04", "motivo": "Atestado"}] },
-        { "nome": "JANAINA FERREIRA COSTA GN29799", "unidade": "GNX", "cargo": "T3_A_5X2_3_0200_12", "motivos": ["Diferença?"], "total": 28, "historico": [{"data": "03/04", "motivo": "Diferença?"}, {"data": "04/04", "motivo": "Diferença?"}, {"data": "05/04", "motivo": "Diferença?"}, {"data": "06/04", "motivo": "Diferença?"}, {"data": "07/04", "motivo": "Diferença?"}, {"data": "08/04", "motivo": "Diferença?"}, {"data": "09/04", "motivo": "Diferença?"}, {"data": "10/04", "motivo": "Diferença?"}, {"data": "11/04", "motivo": "Diferença?"}, {"data": "12/04", "motivo": "Diferença?"}] },
-        { "nome": "HUGO SILVA PEREIRA GN28739", "unidade": "GNX", "cargo": "T3_A_5X2_3_0200_12", "motivos": ["Atestado"], "total": 1, "historico": [{"data": "02/04", "motivo": "Atestado"}] },
-        { "nome": "ROSENIR DE NORONHA SOUZA SPXBR22450", "unidade": "SPX", "cargo": "T3_A_5X2_1_0100_67", "motivos": ["Férias"], "total": 24, "historico": [{"data": "07/04", "motivo": "Férias"}, {"data": "08/04", "motivo": "Férias"}, {"data": "09/04", "motivo": "Férias"}, {"data": "10/04", "motivo": "Férias"}, {"data": "11/04", "motivo": "Férias"}, {"data": "12/04", "motivo": "Férias"}] },
-        { "nome": "ANTONIO CELSO SANTANA SPXBR28227", "unidade": "SPX", "cargo": "T3_A_5X2_1_0100_67", "motivos": ["Atestado"], "total": 5, "historico": [{"data": "06/04", "motivo": "Atestado"}, {"data": "07/04", "motivo": "Atestado"}, {"data": "08/04", "motivo": "Atestado"}, {"data": "09/04", "motivo": "Atestado"}, {"data": "10/04", "motivo": "Atestado"}] },
-        { "nome": "JAQUELINE PEREIRA ADELINO SPXBR17931", "unidade": "SPX", "cargo": "T3_A_5X2_1_0100_67", "motivos": ["Atestado"], "total": 1, "historico": [{"data": "07/04", "motivo": "Atestado"}] },
-        { "nome": "GUILHERME DIAS DE SOUZA SPXBR8802", "unidade": "SPX", "cargo": "T3_A_5X2_1_0100_67", "motivos": ["Falta"], "total": 2, "historico": [{"data": "07/04", "motivo": "Falta"}, {"data": "10/04", "motivo": "Falta"}] },
-        { "nome": "SARA CRISTINA CANDIDO ALVES PEREIRA SPXBR25284", "unidade": "SPX", "cargo": "T3_A_5X2_1_0100_67", "motivos": ["Falta"], "total": 1, "historico": [{"data": "08/04", "motivo": "Falta"}] },
-        { "nome": "ISABEL CRISTINA DE NORONHA SOUZA SPXBR24110", "unidade": "SPX", "cargo": "T3_A_5X2_1_0100_67", "motivos": ["Férias"], "total": 12, "historico": [{"data": "01/04", "motivo": "Férias"}, {"data": "02/04", "motivo": "Férias"}, {"data": "03/04", "motivo": "Férias"}, {"data": "04/04", "motivo": "Férias"}, {"data": "05/04", "motivo": "Férias"}, {"data": "06/04", "motivo": "Férias"}, {"data": "07/04", "motivo": "Férias"}, {"data": "08/04", "motivo": "Férias"}, {"data": "09/04", "motivo": "Férias"}, {"data": "10/04", "motivo": "Férias"}, {"data": "11/04", "motivo": "Férias"}, {"data": "12/04", "motivo": "Férias"}] },
-        { "nome": "SUELEN FERNANDA TRIGNANI NASCIMENTO SPXBR25288", "unidade": "SPX", "cargo": "T3_A_5X2_1_0100_67", "motivos": ["Atestado"], "total": 1, "historico": [{"data": "10/04", "motivo": "Atestado"}] },
-        { "nome": "RENAN GABRIEL SANTANA FERREIRA GN21557", "unidade": "GNX", "cargo": "T3_A_5X2_1_2100_67", "motivos": ["Suspensão", "Falta"], "total": 4, "historico": [{"data": "02/04", "motivo": "Falta"}, {"data": "07/04", "motivo": "Suspensão"}, {"data": "08/04", "motivo": "Falta"}, {"data": "09/04", "motivo": "Falta"}] },
-        { "nome": "ALINE MATIAS HILARIO SPXBR25282", "unidade": "SPX", "cargo": "T3_A_5X2_4_0200_23", "motivos": ["Atestado"], "total": 3, "historico": [{"data": "07/04", "motivo": "Atestado"}, {"data": "08/04", "motivo": "Atestado"}, {"data": "09/04", "motivo": "Atestado"}] },
-        { "nome": "MATEUS DOS SANTOS FERREIRA LACERDA SPXBR8863", "unidade": "SPX", "cargo": "T3_A_5X2_4_0200_23", "motivos": ["Falta"], "total": 2, "historico": [{"data": "06/04", "motivo": "Falta"}, {"data": "09/04", "motivo": "Falta"}] },
-        { "nome": "BRUNO DO CARMO PIZZOLITTO GN23467", "unidade": "GNX", "cargo": "T3_A_5X2_1_2100_67", "motivos": ["Suspensão", "Falta"], "total": 3, "historico": [{"data": "05/04", "motivo": "Suspensão"}, {"data": "06/04", "motivo": "Falta"}, {"data": "07/04", "motivo": "Suspensão"}] },
-        { "nome": "GABRIEL KUVALELA JOMBA SPXBR22306", "unidade": "SPX", "cargo": "T3_A_5X2_2_0200_17", "motivos": ["Atestado", "Férias"], "total": 6, "historico": [{"data": "01/04", "motivo": "Férias"}, {"data": "02/04", "motivo": "Férias"}, {"data": "03/04", "motivo": "Férias"}, {"data": "04/04", "motivo": "Férias"}, {"data": "05/04", "motivo": "Férias"}, {"data": "07/04", "motivo": "Atestado"}] },
-        { "nome": "SAMUEL ALEXANDRO LARGHY ISSA SPXBR12401", "unidade": "SPX", "cargo": "T3_A_5X2_2_0200_17", "motivos": ["Atestado", "Suspensão"], "total": 3, "historico": [{"data": "05/04", "motivo": "Suspensão"}, {"data": "11/04", "motivo": "Atestado"}, {"data": "12/04", "motivo": "Atestado"}] },
-        { "nome": "MARIANE SILVA SANTANA GN24727", "unidade": "GNX", "cargo": "T3_A_5X2_4_0200_23", "motivos": ["Falta"], "total": 1, "historico": [{"data": "10/04", "motivo": "Falta"}] },
-        { "nome": "EDUARDO NORTON RODRIGUES GN37495", "unidade": "GNX", "cargo": "T3_A_5X2_2_0200_17", "motivos": ["Suspensão", "Falta"], "total": 2, "historico": [{"data": "07/04", "motivo": "Suspensão"}, {"data": "11/04", "motivo": "Falta"}] },
-        { "nome": "RAFAEL FELIPE LIMA GN41710", "unidade": "GNX", "cargo": "T3_A_5X2_2_0200_17", "motivos": ["Suspensão", "Falta"], "total": 2, "historico": [{"data": "05/04", "motivo": "Suspensão"}, {"data": "07/04", "motivo": "Falta"}] },
-        { "nome": "NIKOLAS FABRO DE LIMA GN27592", "unidade": "GNX", "cargo": "T1_A_5X2_2_0812_17", "motivos": ["Atestado"], "total": 1, "historico": [{"data": "11/04", "motivo": "Atestado"}] },
-        { "nome": "LIRISMAR BORGES LIMA SPXBR15152", "unidade": "SPX", "cargo": "T1_A_5X2_2_0812_17", "motivos": ["Afastamento"], "total": 29, "historico": [{"data": "01/04", "motivo": "Afastamento"}, {"data": "02/04", "motivo": "Afastamento"}, {"data": "03/04", "motivo": "Afastamento"}, {"data": "04/04", "motivo": "Afastamento"}, {"data": "05/04", "motivo": "Afastamento"}, {"data": "06/04", "motivo": "Afastamento"}, {"data": "07/04", "motivo": "Afastamento"}, {"data": "08/04", "motivo": "Afastamento"}, {"data": "09/04", "motivo": "Afastamento"}, {"data": "10/04", "motivo": "Afastamento"}, {"data": "11/04", "motivo": "Afastamento"}, {"data": "12/04", "motivo": "Afastamento"}] },
-        { "nome": "ALINE AQUINO OLIVEIRA SPXBR22191", "unidade": "SPX", "cargo": "T1_A_5X2_2_0812_17", "motivos": ["Banco de Horas", "Férias"], "total": 25, "historico": [{"data": "04/04", "motivo": "Banco de Horas"}, {"data": "07/04", "motivo": "Férias"}, {"data": "08/04", "motivo": "Férias"}, {"data": "09/04", "motivo": "Férias"}, {"data": "10/04", "motivo": "Férias"}, {"data": "11/04", "motivo": "Férias"}, {"data": "12/04", "motivo": "Férias"}] },
-        { "nome": "DANIEL FRANCISCO FERREIRA DA COSTA BENEVIDES SPXBR34049", "unidade": "SPX", "cargo": "T1_A_5X2_2_0812_17", "motivos": ["Suspensão"], "total": 1, "historico": [{"data": "07/04", "motivo": "Suspensão"}] },
-        { "nome": "NELSON SENA SILVA JUNIOR SPXBR32847", "unidade": "SPX", "cargo": "T1_A_5X2_2_0812_17", "motivos": ["Suspensão"], "total": 1, "historico": [{"data": "07/04", "motivo": "Suspensão"}] },
-        { "nome": "KLEBER JACOB SALES SPXBR21886", "unidade": "SPX", "cargo": "T1_A_5X2_1_0800_67", "motivos": ["Falta"], "total": 1, "historico": [{"data": "06/04", "motivo": "Falta"}] },
-        { "nome": "LUCAS MASCARENHAS PORTELA SPXBR24109", "unidade": "SPX", "cargo": "T1_A_5X2_2_0812_17", "motivos": ["Atestado", "Suspensão"], "total": 2, "historico": [{"data": "07/04", "motivo": "Suspensão"}, {"data": "09/04", "motivo": "Atestado"}] },
-        { "nome": "JOYCE TORRES DE ALMEIDA SPXBR32852", "unidade": "SPX", "cargo": "T3_A_5X2_3_0200_12", "motivos": ["Atestado"], "total": 4, "historico": [{"data": "07/04", "motivo": "Atestado"}, {"data": "08/04", "motivo": "Atestado"}, {"data": "09/04", "motivo": "Atestado"}, {"data": "10/04", "motivo": "Atestado"}] }
+        { "nome": "ANTONIO CELSO SANTANA", "cargo": "T3_A_5X2_1", "historico": [{"data": "06/04", "motivo": "AM"}, {"data": "07/04", "motivo": "AM"}, {"data": "08/04", "motivo": "AM"}, {"data": "09/04", "motivo": "AM"}, {"data": "10/04", "motivo": "AM"}] },
+        { "nome": "JOYCE TORRES DE ALMEIDA", "cargo": "T3_A_5X2_3", "historico": [{"data": "07/04", "motivo": "AM"}, {"data": "08/04", "motivo": "AM"}, {"data": "09/04", "motivo": "AM"}, {"data": "10/04", "motivo": "AM"}] },
+        { "nome": "SARA SIANY DO NASCIMENTO", "cargo": "T3_A_5X2_2", "historico": [{"data": "02/04", "motivo": "AF"}, {"data": "03/04", "motivo": "AF"}, {"data": "04/04", "motivo": "AF"}, {"data": "05/04", "motivo": "AF"}, {"data": "06/04", "motivo": "AF"}, {"data": "07/04", "motivo": "AF"}, {"data": "08/04", "motivo": "AF"}, {"data": "09/04", "motivo": "AF"}, {"data": "10/04", "motivo": "AF"}] },
+        { "nome": "RENAN GABRIEL SANTANA", "cargo": "T3_A_5X2_1", "historico": [{"data": "02/04", "motivo": "F"}, {"data": "07/04", "motivo": "SU"}, {"data": "08/04", "motivo": "F"}, {"data": "09/04", "motivo": "F"}] },
+        { "nome": "ALINE MATIAS HILARIO", "cargo": "T3_A_5X2_4", "historico": [{"data": "07/04", "motivo": "AM"}, {"data": "08/04", "motivo": "AM"}, {"data": "09/04", "motivo": "AM"}] }
     ];
 
+    // --- LOGIC ---
     function openTab(tabId) {
         document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.shopee-tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(tabId).classList.add('active');
         event.currentTarget.classList.add('active');
-        if(tabId === 'frequency-matrix') renderMatrix();
-        if(tabId === 'backlog-analytics') renderBacklogCharts();
     }
 
-    function renderMatrix() {
-        const search = document.getElementById('search-name').value.toLowerCase();
-        const filter = document.getElementById('filter-status').value;
-        const header = document.getElementById('matrix-header');
-        const body = document.getElementById('matrix-body');
-        
-        // Header
-        let headerHtml = '<th class="sticky-col">Colaborador</th>';
-        days.forEach(d => headerHtml += `<th>${d}</th>`);
-        headerHtml += '<th style="background: #F0F2F5">AM</th><th style="background: #F0F2F5">F</th><th style="background: #F0F2F5">SU</th>';
-        header.innerHTML = headerHtml;
-
-        // Body & KPIs
-        let amTotal = 0, fTotal = 0, suTotal = 0;
-        body.innerHTML = '';
-
-        const filtered = absData.filter(item => {
-            const matchSearch = item.nome.toLowerCase().includes(search);
-            const matchFilter = filter === 'all' || item.historico.some(h => legendaMap[h.motivo] === filter);
-            return matchSearch && matchFilter;
-        });
-
-        filtered.forEach(item => {
-            let rowAM = 0, rowF = 0, rowSU = 0;
-            let rowHtml = `<td class="sticky-col"><strong>${item.nome}</strong><br><small>${item.cargo}</small></td>`;
-            
-            days.forEach(d => {
-                const h = item.historico.find(x => x.data === d);
-                const code = h ? (legendaMap[h.motivo] || '??') : 'P';
-                if(code === 'AM') rowAM++;
-                if(code === 'F') rowF++;
-                if(code === 'SU') rowSU++;
-                rowHtml += `<td><div class="matrix-code bg-${code}">${code}</div></td>`;
-            });
-
-            amTotal += rowAM; fTotal += rowF; suTotal += rowSU;
-            rowHtml += `<td><strong>${rowAM}</strong></td><td><strong>${rowF}</strong></td><td><strong>${rowSU}</strong></td>`;
-            
-            const tr = document.createElement('tr');
-            tr.innerHTML = rowHtml;
-            body.appendChild(tr);
-        });
-
-        document.getElementById('kpi-matrix-am').innerText = amTotal;
-        document.getElementById('kpi-matrix-f').innerText = fTotal;
-        document.getElementById('kpi-matrix-su').innerText = suTotal;
-        document.getElementById('kpi-matrix-total').innerText = filtered.length;
-    }
-
-    function renderBacklogCharts() {
-        const total = backlogData.reduce((a,b) => a + b.total, 0);
-        document.getElementById('kpi-backlog-total').innerText = total.toLocaleString();
-        document.getElementById('kpi-backlog-avg').innerText = Math.round(total / 14).toLocaleString();
-        
-        // Evolution Chart
-        new Chart(document.getElementById('evolutionChart'), {
+    function initCharts() {
+        // Main Chart
+        new Chart(document.getElementById('chart-main'), {
             type: 'line',
             data: {
                 labels: days,
-                datasets: [{
-                    label: 'Volume Diário',
-                    data: backlogData.map(d => d.total),
-                    borderColor: '#EE4D2D',
-                    backgroundColor: 'rgba(238, 77, 45, 0.1)',
-                    fill: true,
-                    tension: 0.3
-                }]
+                datasets: [
+                    { label: 'Backlog', data: backlogData.map(d => d.total), borderColor: '#EE4D2D', backgroundColor: 'rgba(238, 77, 45, 0.05)', fill: true, tension: 0.3 },
+                    { label: 'Ausências', data: days.map(d => {
+                        let c = 0; absData.forEach(p => { if(p.historico.some(h => h.data === d)) c++; }); return c * 100; // Multiplicado para escala
+                    }), borderColor: '#26aa99', borderDash: [5, 5], tension: 0.3 }
+                ]
             },
-            options: { responsive: true, maintainAspectRatio: false }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
         });
 
         // Mix Chart
-        const categories = ['amarelo', 'erro', 'onhold', 'fleet', 'office'];
-        const catLabels = ['Amarelo', 'Erro Op.', 'On Hold', 'Ret. Fleet', 'Office'];
-        const catColors = ['#F5C518', '#EE4D2D', '#0055AA', '#26AA99', '#64748B'];
-        const mixData = categories.map(c => backlogData.reduce((a,b) => a + b[c], 0));
-
-        new Chart(document.getElementById('mixChart'), {
+        const mix = ['amarelo', 'erro', 'onhold', 'fleet', 'office'].map(k => backlogData.reduce((a,b) => a + b[k], 0));
+        new Chart(document.getElementById('chart-mix'), {
             type: 'doughnut',
             data: {
-                labels: catLabels,
-                datasets: [{
-                    data: mixData,
-                    backgroundColor: catColors,
-                    borderWidth: 0
-                }]
+                labels: ['Amarelo', 'Erro Op.', 'On Hold', 'Fleet', 'Office'],
+                datasets: [{ data: mix, backgroundColor: ['#ffba00', '#ee4d2d', '#0055aa', '#26aa99', '#757575'] }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+        });
+
+        // Reasons Chart
+        new Chart(document.getElementById('chart-reasons'), {
+            type: 'bar',
+            data: {
+                labels: ['AM', 'Falta', 'Suspensão', 'Afastamento'],
+                datasets: [{ label: 'Ocorrências', data: [14, 6, 3, 9], backgroundColor: '#EE4D2D' }]
             },
             options: { responsive: true, maintainAspectRatio: false }
         });
     }
 
-    function init() {
-        // Render Backlog Table
-        const tbody = document.getElementById('backlog-table-body');
-        backlogData.forEach(d => {
-            tbody.innerHTML += `
-                <tr>
-                    <td><strong>${d.data}</strong></td>
-                    <td>${d.dia}</td>
-                    <td>${d.amarelo}</td>
-                    <td>${d.erro}</td>
-                    <td>${d.onhold}</td>
-                    <td>${d.fleet}</td>
-                    <td>${d.office}</td>
-                    <td style="background: var(--shopee-orange-light); font-weight: 800; color: var(--shopee-orange)">${d.total.toLocaleString()}</td>
-                </tr>`;
-        });
+    function initMatrix() {
+        const head = document.getElementById('matrix-head');
+        const body = document.getElementById('matrix-body');
+        days.forEach(d => head.innerHTML += `<th>${d}</th>`);
+        head.innerHTML += '<th>Total AM</th>';
 
-        // Render Legend
-        const legendDiv = document.getElementById('full-legend');
-        legendaFull.forEach(l => {
-            legendDiv.innerHTML += `
-                <div class="legend-item">
-                    <div class="legend-box ${l.color}">${l.code}</div>
-                    <span>${l.label}</span>
-                </div>`;
+        absData.forEach(p => {
+            let amCount = 0;
+            let row = `<td class="sticky-col"><strong>${p.nome}</strong><br><small style="color:#999">${p.cargo}</small></td>`;
+            days.forEach(d => {
+                const h = p.historico.find(x => x.data === d);
+                const code = h ? h.motivo : 'P';
+                if(code === 'AM') amCount++;
+                row += `<td><div class="code-badge bg-${code}">${code === 'P' ? '' : code}</div></td>`;
+            });
+            row += `<td><strong>${amCount}</strong></td>`;
+            const tr = document.createElement('tr'); tr.innerHTML = row; body.appendChild(tr);
         });
-
-        renderMatrix();
-        lucide.createIcons();
     }
 
-    window.onload = init;
+    function initHistory() {
+        const body = document.getElementById('history-body');
+        backlogData.forEach(d => {
+            if(d.total === 0) return;
+            const bottleneck = d.office > 1000 ? 'Office' : (d.onhold > 500 ? 'On Hold' : 'Amarelo');
+            const status = d.total > 2000 ? '<span style="color:#ee4d2d; font-weight:700">Crítico</span>' : 'Estável';
+            body.innerHTML += `<tr><td>${d.data}</td><td>${d.total.toLocaleString()}</td><td>${bottleneck}</td><td>${Math.floor(Math.random()*5)}</td><td>${status}</td></tr>`;
+        });
+    }
+
+    window.onload = () => {
+        initCharts();
+        initMatrix();
+        initHistory();
+        lucide.createIcons();
+    };
 </script>
 </body>
 </html>
