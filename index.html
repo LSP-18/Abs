@@ -293,11 +293,22 @@
             outline: none;
         }
 
-        .filter-item select:focus, .filter-item input:focus {
+        .filter-item select:f        .filter-item input:focus {
             border-color: var(--shopee-orange);
         }
 
-        .badge {
+        .total-counter {
+            background: var(--shopee-orange-light);
+            color: var(--shopee-orange);
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid var(--shopee-orange);
+        }        .badge {
             padding: 4px 10px;
             border-radius: 6px;
             font-size: 11px;
@@ -328,6 +339,8 @@
 
         .reason-falta { background: #FEE2E2; color: #B91C1C; border-color: #FCA5A5; }
         .reason-atestado { background: #DCFCE7; color: #15803D; border-color: #86EFAC; }
+        .reason-atestado-médico { background: #DCFCE7; color: #15803D; border-color: #86EFAC; }
+        .reason-am { background: #DCFCE7; color: #15803D; border-color: #86EFAC; }
         .reason-suspensão { background: #FEF3C7; color: #92400E; border-color: #FCD34D; }
         .reason-afastamento { background: #E0F2FE; color: #0369A1; border-color: #7DD3FC; }
         .reason-férias { background: #F3E8FF; color: #7E22CE; border-color: #D8B4FE; }
@@ -434,7 +447,7 @@
                 <select id="reason-filter" onchange="filterAbs()">
                     <option value="all">Todos os Motivos</option>
                     <option value="Falta">Falta</option>
-                    <option value="Atestado">Atestado</option>
+                    <option value="Atestado médico">Atestado médico (AM)</option>
                     <option value="Suspensão">Suspensão</option>
                     <option value="Afastamento">Afastamento</option>
                     <option value="Férias">Férias</option>
@@ -446,6 +459,10 @@
             <div class="filter-item">
                 <label for="name-search">Buscar Nome</label>
                 <input type="text" id="name-search" placeholder="Digite o nome..." oninput="filterAbs()">
+            </div>
+            <div class="total-counter" id="abs-total-counter">
+                <i data-lucide="users" size="20"></i>
+                Total AM: <span id="abs-total-value">0</span>
             </div>
         </div>
 
@@ -1965,20 +1982,45 @@
         const reason = document.getElementById('reason-filter').value;
         const name = document.getElementById('name-search').value.toLowerCase();
         const tbody = document.getElementById('abs-table-body');
+        const totalValueSpan = document.getElementById('abs-total-value');
         
-        const filtered = absData.filter(item => {
-            const matchReason = reason === 'all' || item.motivos.includes(reason);
+        // Define o período solicitado
+        const startDate = "06/04";
+        const endDate = "12/04";
+        
+        let grandTotalAM = 0;
+
+        // Filtra e processa os dados
+        const filtered = absData.map(item => {
+            // Filtra o histórico para o período e motivo selecionado
+            const filteredHistory = item.historico.filter(h => {
+                const dateInRange = h.data >= startDate && h.data <= endDate;
+                const matchReason = reason === 'all' || h.motivo === reason;
+                return dateInRange && matchReason;
+            });
+
+            if (filteredHistory.length === 0) return null;
+
             const matchName = item.nome.toLowerCase().includes(name);
-            return matchReason && matchName;
-        });
+            if (!matchName) return null;
+
+            return {
+                ...item,
+                filteredHistory,
+                periodTotal: filteredHistory.length
+            };
+        }).filter(item => item !== null);
+
+        // Ordena por quem tem mais registros no período
+        filtered.sort((a, b) => b.periodTotal - a.periodTotal);
 
         tbody.innerHTML = '';
         filtered.forEach(item => {
+            grandTotalAM += item.periodTotal;
             const row = document.createElement('tr');
             
-            // Create daily history badges
-            const historyBadges = item.historico.map(h => `
-                <div class="history-item reason-${h.motivo.toLowerCase().replace(' ', '-')}">
+            const historyBadges = item.filteredHistory.map(h => `
+                <div class="history-item reason-${h.motivo.toLowerCase().replace(/ /g, '-').replace(/[áàâã]/g, 'a').replace(/[éèê]/g, 'e').replace(/[íìî]/g, 'i').replace(/[óòôõ]/g, 'o').replace(/[úùû]/g, 'u')}">
                     <span class="history-date">${h.data}</span>
                     <span>${h.motivo}</span>
                 </div>
@@ -1987,10 +2029,21 @@
             row.innerHTML = `
                 <td class="td-bold">${item.nome}</td>
                 <td><div class="history-container">${historyBadges}</div></td>
-                <td class="td-bold" style="color: var(--shopee-orange)">${item.total}</td>
+                <td class="td-bold" style="color: var(--shopee-orange)">${item.periodTotal}</td>
             `;
             tbody.appendChild(row);
         });
+
+        totalValueSpan.innerText = grandTotalAM;
+        
+        // Se o filtro for especificamente "Atestado médico", atualiza o texto do contador
+        const counterLabel = document.getElementById('abs-total-counter');
+        if (reason === 'Atestado médico') {
+            counterLabel.innerHTML = `<i data-lucide="heart-pulse" size="20"></i> Total AM (06/04 a 12/04): <span id="abs-total-value">${grandTotalAM}</span>`;
+        } else {
+            counterLabel.innerHTML = `<i data-lucide="users" size="20"></i> Total Registros (06/04 a 12/04): <span id="abs-total-value">${grandTotalAM}</span>`;
+        }
+        lucide.createIcons();
     }
 
     // --- CALCULATIONS ---
@@ -2153,6 +2206,9 @@
     });
 
     lucide.createIcons();
+    // Inicializa a aba de ABs com o filtro padrão (Atestado Médico) e período correto
+    document.getElementById('reason-filter').value = 'Atestado médico';
+    filterAbs();
 </script>
 </body>
 </html>
