@@ -1244,13 +1244,17 @@
 <script>
     Chart.register(ChartDataLabels);
 
-    // FIREBASE CONFIG (Placeholder or loaded)
+    // FIREBASE REALTIME DATABASE
+    const FIREBASE_DATABASE_URL = 'https://backlog-carandiru-17de5-default-rtdb.firebaseio.com';
     let db = null;
+    let firebaseConnected = false;
     try {
-        const firebaseConfig = { databaseURL: "https://dashboard-backlog-shopee-default-rtdb.firebaseio.com" };
+        const firebaseConfig = { databaseURL: FIREBASE_DATABASE_URL };
         if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
         db = firebase.database();
-    } catch(e) { console.log('Firebase offline mode'); }
+    } catch (e) {
+        console.error('Falha ao inicializar o Firebase:', e);
+    }
 
     let currentTab = 'overview';
     let isAdmin = false;
@@ -1287,9 +1291,62 @@
         {data: '12/04', dia: 'Domingo', amarelo: 70, erro: 14, onhold: 8, fleet: 6, office: 3, lhpiso: 1, noshow: 4, total: 106}
     ];
 
-    let dataCarandiru = [...initialDataCarandiru];
-    let dataVilaGuilherme = [...initialDataVilaGuilherme];
-    let dataGua = [...initialDataGua];
+    // Quando o Firebase está disponível, a fonte oficial passa a ser a base remota.
+    // Os dados iniciais ficam apenas como fallback para abrir o arquivo sem internet.
+    let dataCarandiru = db ? [] : [...initialDataCarandiru];
+    let dataVilaGuilherme = db ? [] : [...initialDataVilaGuilherme];
+    let dataGua = db ? [] : [...initialDataGua];
+
+    function normalizeHub(hub) {
+        const value = String(hub || 'carandiru').trim().toLowerCase();
+        if (value === 'gua' || value === 'hub-gua' || value === 'guá') return 'gua';
+        if (value === 'vila' || value === 'vila-guilherme' || value === 'vila guilherme') return 'vila-guilherme';
+        return 'carandiru';
+    }
+
+    function normalizeRecord(item, firebaseKey) {
+        if (!item || typeof item !== 'object') return null;
+        const record = {
+            ...item,
+            hub: normalizeHub(item.hub),
+            data: item.data || '',
+            dia: item.dia || '',
+            amarelo: Number(item.amarelo) || 0,
+            erro: Number(item.erro) || 0,
+            onhold: Number(item.onhold) || 0,
+            fleet: Number(item.fleet) || 0,
+            office: Number(item.office) || 0,
+            lhpiso: Number(item.lhpiso) || 0,
+            noshow: Number(item.noshow) || 0,
+            total: Number(item.total) || 0
+        };
+        if (!record.total) {
+            record.total = record.amarelo + record.erro + record.onhold + record.fleet + record.office + record.lhpiso + record.noshow;
+        }
+        if (firebaseKey) record._firebaseKey = firebaseKey;
+        return record;
+    }
+
+    function startFirebaseSync() {
+        if (!db) return;
+        db.ref('backlog_data').on('value', (snapshot) => {
+            const raw = snapshot.val() || {};
+            firebaseRawData = raw;
+            const items = Object.entries(raw)
+                .map(([key, item]) => normalizeRecord(item, key))
+                .filter(Boolean);
+
+            dataCarandiru = items.filter(item => item.hub === 'carandiru');
+            dataVilaGuilherme = items.filter(item => item.hub === 'vila-guilherme');
+            dataGua = items.filter(item => item.hub === 'gua');
+            firebaseConnected = true;
+            updateDashboard();
+        }, (error) => {
+            firebaseConnected = false;
+            console.error('Erro ao ler backlog_data:', error);
+            showToast('Não foi possível ler os dados do Firebase.', 'error');
+        });
+    }
 
     // TOAST NOTIFICATIONS
     function showToast(message, type = 'success') {
@@ -1450,12 +1507,25 @@
         if (!item) return;
 
         const newVal = prompt(`Editar ${field} para o dia ${date}:`, item[field]);
-        if (newVal !== null) {
-            const val = parseInt(newVal) || 0;
+        if (newVal === null) return;
+
+        const val = parseInt(newVal, 10) || 0;
+        const total = (field === 'total' ? val : (item.amarelo || 0) + (item.erro || 0) + (item.onhold || 0) + (item.fleet || 0) + (item.office || 0) + (item.lhpiso || 0) + (item.noshow || 0) - (Number(item[field]) || 0) + val);
+        const firebaseKey = item._firebaseKey;
+
+        if (db && firebaseKey && firebaseRawData[firebaseKey]) {
+            const updatedItem = { ...firebaseRawData[firebaseKey], [field]: val, total };
+            db.ref(`backlog_data/${firebaseKey}`).set(updatedItem)
+                .then(() => showToast('✓ Registro atualizado no Firebase!', 'success'))
+                .catch(error => {
+                    console.error('Erro ao atualizar registro:', error);
+                    showToast('✗ O Firebase recusou a alteração.', 'error');
+                });
+        } else {
             item[field] = val;
-            item.total = (item.amarelo || 0) + (item.erro || 0) + (item.onhold || 0) + (item.fleet || 0) + (item.office || 0) + (item.lhpiso || 0) + (item.noshow || 0);
+            item.total = total;
             updateDashboard();
-            showToast('✓ Valor atualizado com sucesso!', 'success');
+            showToast('✓ Valor atualizado localmente!', 'success');
         }
     }
 
@@ -1846,14 +1916,26 @@
         };
         newItem.total = newItem.amarelo + newItem.erro + newItem.onhold + newItem.fleet + newItem.office + newItem.lhpiso + newItem.noshow;
         
-        if (hub === 'carandiru') dataCarandiru.push(newItem); 
-        else if (hub === 'vila-guilherme') dataVilaGuilherme.push(newItem); 
-        else if (hub === 'gua') dataGua.push(newItem);
-
-        updateDashboard(); 
-        showToast('✓ Salvo com sucesso!', 'success'); 
-        closeModal('addModal');
-        this.reset();
+        if (db) {
+            db.ref('backlog_data').push(newItem)
+                .then(() => {
+                    showToast('✓ Registro salvo no Firebase!', 'success');
+                    closeModal('addModal');
+                    this.reset();
+                })
+                .catch(error => {
+                    console.error('Erro ao salvar registro:', error);
+                    showToast('✗ O Firebase recusou o novo registro.', 'error');
+                });
+        } else {
+            if (hub === 'carandiru') dataCarandiru.push(newItem);
+            else if (hub === 'vila-guilherme') dataVilaGuilherme.push(newItem);
+            else if (hub === 'gua') dataGua.push(newItem);
+            updateDashboard();
+            showToast('✓ Salvo localmente!', 'success');
+            closeModal('addModal');
+            this.reset();
+        }
     };
 
     window.onload = () => {
@@ -1862,6 +1944,7 @@
         updateThemeIcon();
         document.getElementById('current-date').innerText = new Date().toLocaleDateString('pt-BR');
         updateDashboard();
+        startFirebaseSync();
         lucide.createIcons();
     };
 </script>
