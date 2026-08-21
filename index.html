@@ -3,706 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dashboard Carandiru - Emanuel Brendon</title>
+    <title>Dashboard Backlog Shopee - Emanuel Brendon</title>
     <link rel="icon" href="https://cdn.awsli.com.br/800x800/2015/2015798/produto/354645871/shoppe--2--mvj1hgvttt.png">
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest">
-    
-    
-    // DADOS PARA COMPARAÇÃO LSP-18 ATUALIZADOS
-    const monthlyDataLSP18 = {
-        "Janeiro": { lost: { vol: 687, val: 45574.6 }, damaged: { vol: 172, val: 12090.03 } },
-        "Fevereiro": { lost: { vol: 440, val: 36143.34 }, damaged: { vol: 160, val: 8285.24 } },
-        "Março": { lost: { vol: 323, val: 25893.86 }, damaged: { vol: 144, val: 11512.76 } },
-        "Abril": { lost: { vol: 208, val: 15959.78 }, damaged: { vol: 163, val: 14080.54 } },
-        "Maio": { lost: { vol: 0, val: 0 }, damaged: { vol: 56, val: 4406.25 } }
-    };
-
-    document.getElementById('btnComparar').addEventListener('click', function() {
-        const m1 = document.getElementById('filterMonth1').value;
-        const m2 = document.getElementById('filterMonth2').value;
-        if (!m1 || !m2 || m1 === m2) { showToast('Selecione dois meses diferentes', 'warning'); return; }
-
-        const d1 = monthlyDataLSP18[m1];
-        const d2 = monthlyDataLSP18[m2];
-
-        document.getElementById('cardBaseTitle').innerText = `${m1} (Base)`;
-        document.getElementById('cardBaseData').innerText = `Lost: ${d1.lost.vol.toLocaleString()} | Damaged: ${d1.damaged.vol.toLocaleString()}`;
-        
-        document.getElementById('cardCompTitle').innerText = `${m2} (Comparativo)`;
-        document.getElementById('cardCompData').innerText = `Lost: ${d2.lost.vol.toLocaleString()} | Damaged: ${d2.damaged.vol.toLocaleString()}`;
-
-        const getDeltaText = (v1, v2, isCur = false) => {
-            const d = v2 - v1;
-            const p = v1 !== 0 ? ((d / v1) * 100).toFixed(1) : (v2 > 0 ? 100 : 0);
-            const formatted = isCur ? new Intl.NumberFormat('pt-BR', {style:'currency', currency:'BRL'}).format(Math.abs(d)) : Math.abs(d).toLocaleString();
-            return (d >= 0 ? '+' : '-') + formatted + ' (' + (d >= 0 ? '+' : '') + p + '%)';
-        };
-
-        document.getElementById('valLostVol').innerText = getDeltaText(d1.lost.vol, d2.lost.vol);
-        document.getElementById('valLostVal').innerText = getDeltaText(d1.lost.val, d2.lost.val, true);
-        document.getElementById('valDamagedVol').innerText = getDeltaText(d1.damaged.vol, d2.damaged.vol);
-        document.getElementById('valDamagedVal').innerText = getDeltaText(d1.damaged.val, d2.damaged.val, true);
-
-        // SMART DETAILING TEXT
-        const diffLost = d2.lost.vol - d1.lost.vol;
-        const diffDamaged = d2.damaged.vol - d1.damaged.vol;
-        
-        let summary = `Na comparação entre ${m1} e ${m2}, houve uma `;
-        summary += diffLost <= 0 ? `redução de ${Math.abs(diffLost)} em Lost` : `elevação de ${diffLost} em Lost`;
-        summary += ` e uma `;
-        summary += diffDamaged <= 0 ? `queda de ${Math.abs(diffDamaged)} em Damaged.` : `subida de ${diffDamaged} em Damaged.`;
-        summary += ` O impacto financeiro total variou de ${new Intl.NumberFormat('pt-BR', {style:'currency', currency:'BRL'}).format(d1.lost.val + d1.damaged.val)} para ${new Intl.NumberFormat('pt-BR', {style:'currency', currency:'BRL'}).format(d2.lost.val + d2.damaged.val)}.`;
-
-        document.getElementById('textDetalhamento').innerText = summary;
-        document.getElementById('comparisonResult').style.display = 'block';
-        lucide.createIcons();
-    });
-
-
-
-    // Ajustar os gráficos de linha do LSP-18 para mostrar Lost e Damaged separados
-    const originalRenderLsp18 = renderLsp18;
-    renderLsp18 = function() {
-        originalRenderLsp18(); // Chama o original para setup básico
-        
-        const theme = document.documentElement.getAttribute('data-theme');
-        const textColor = theme === 'light' ? '#6B7280' : '#A0AEC0';
-        const labelColor = theme === 'light' ? '#1A1A1A' : '#F8FAFC';
-        const months = ["1 - Janeiro", "2 - Fevereiro", "3 - Março", "4 - Abril", "5 - Maio"];
-        
-        const lostVols = [687, 440, 323, 208, 0];
-        const damagedVols = [172, 160, 144, 163, 56];
-        const lostVals = [45574.6, 36143.34, 25893.86, 15959.78, 0];
-        const damagedVals = [12090.03, 8285.24, 11512.76, 14080.54, 4406.25];
-
-        const commonLineOptions = {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { 
-                legend: { display: true, position: 'top', align: 'end', labels: { usePointStyle: true, font: { size: 11, weight: '600' }, color: textColor } },
-                datalabels: { display: true, anchor: 'end', align: 'top', color: labelColor, font: { weight: '700', size: 10 }, formatter: (v) => v > 0 ? v.toLocaleString('pt-BR') : '0' }
-            },
-            scales: { 
-                y: { beginAtZero: true, grace: '20%', ticks: { color: textColor }, grid: { borderDash: [5, 5] } },
-                x: { ticks: { color: textColor } }
-            }
-        };
-
-        if(charts.lsp18Volume) charts.lsp18Volume.destroy();
-        charts.lsp18Volume = new Chart(document.getElementById('lsp18VolumeChart'), {
-            type: 'line',
-            data: {
-                labels: months,
-                datasets: [
-                    { label: 'Lost', data: lostVols, borderColor: '#EE4D2D', backgroundColor: 'rgba(238, 77, 45, 0.1)', fill: true, tension: 0.3, pointRadius: 4 },
-                    { label: 'Damaged', data: damagedVols, borderColor: '#000', borderDash: [5, 2], tension: 0.3, pointRadius: 0 }
-                ]
-            },
-            options: commonLineOptions
-        });
-
-        if(charts.lsp18Value) charts.lsp18Value.destroy();
-        charts.lsp18Value = new Chart(document.getElementById('lsp18ValueChart'), {
-            type: 'line',
-            data: {
-                labels: months,
-                datasets: [
-                    { label: 'Damaged', data: damagedVals, borderColor: '#EE4D2D', backgroundColor: 'rgba(238, 77, 45, 0.1)', fill: true, tension: 0.3, pointRadius: 4 },
-                    { label: 'Lost', data: lostVals, borderColor: '#000', borderDash: [5, 2], tension: 0.3, pointRadius: 0 }
-                ]
-            },
-            options: {
-                ...commonLineOptions,
-                plugins: {
-                    ...commonLineOptions.plugins,
-                    datalabels: { ...commonLineOptions.plugins.datalabels, formatter: (v) => v > 0 ? v.toLocaleString('pt-BR', {minimumFractionDigits: 2}) : '0,00' }
-                }
-            }
-        });
-    };
-
-</script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js">
-    
-    
-    // DADOS PARA COMPARAÇÃO LSP-18 ATUALIZADOS
-    const monthlyDataLSP18 = {
-        "Janeiro": { lost: { vol: 687, val: 45574.6 }, damaged: { vol: 172, val: 12090.03 } },
-        "Fevereiro": { lost: { vol: 440, val: 36143.34 }, damaged: { vol: 160, val: 8285.24 } },
-        "Março": { lost: { vol: 323, val: 25893.86 }, damaged: { vol: 144, val: 11512.76 } },
-        "Abril": { lost: { vol: 208, val: 15959.78 }, damaged: { vol: 163, val: 14080.54 } },
-        "Maio": { lost: { vol: 0, val: 0 }, damaged: { vol: 56, val: 4406.25 } }
-    };
-
-    document.getElementById('btnComparar').addEventListener('click', function() {
-        const m1 = document.getElementById('filterMonth1').value;
-        const m2 = document.getElementById('filterMonth2').value;
-        if (!m1 || !m2 || m1 === m2) { showToast('Selecione dois meses diferentes', 'warning'); return; }
-
-        const d1 = monthlyDataLSP18[m1];
-        const d2 = monthlyDataLSP18[m2];
-
-        document.getElementById('cardBaseTitle').innerText = `${m1} (Base)`;
-        document.getElementById('cardBaseData').innerText = `Lost: ${d1.lost.vol.toLocaleString()} | Damaged: ${d1.damaged.vol.toLocaleString()}`;
-        
-        document.getElementById('cardCompTitle').innerText = `${m2} (Comparativo)`;
-        document.getElementById('cardCompData').innerText = `Lost: ${d2.lost.vol.toLocaleString()} | Damaged: ${d2.damaged.vol.toLocaleString()}`;
-
-        const getDeltaText = (v1, v2, isCur = false) => {
-            const d = v2 - v1;
-            const p = v1 !== 0 ? ((d / v1) * 100).toFixed(1) : (v2 > 0 ? 100 : 0);
-            const formatted = isCur ? new Intl.NumberFormat('pt-BR', {style:'currency', currency:'BRL'}).format(Math.abs(d)) : Math.abs(d).toLocaleString();
-            return (d >= 0 ? '+' : '-') + formatted + ' (' + (d >= 0 ? '+' : '') + p + '%)';
-        };
-
-        document.getElementById('valLostVol').innerText = getDeltaText(d1.lost.vol, d2.lost.vol);
-        document.getElementById('valLostVal').innerText = getDeltaText(d1.lost.val, d2.lost.val, true);
-        document.getElementById('valDamagedVol').innerText = getDeltaText(d1.damaged.vol, d2.damaged.vol);
-        document.getElementById('valDamagedVal').innerText = getDeltaText(d1.damaged.val, d2.damaged.val, true);
-
-        // SMART DETAILING TEXT
-        const diffLost = d2.lost.vol - d1.lost.vol;
-        const diffDamaged = d2.damaged.vol - d1.damaged.vol;
-        
-        let summary = `Na comparação entre ${m1} e ${m2}, houve uma `;
-        summary += diffLost <= 0 ? `redução de ${Math.abs(diffLost)} em Lost` : `elevação de ${diffLost} em Lost`;
-        summary += ` e uma `;
-        summary += diffDamaged <= 0 ? `queda de ${Math.abs(diffDamaged)} em Damaged.` : `subida de ${diffDamaged} em Damaged.`;
-        summary += ` O impacto financeiro total variou de ${new Intl.NumberFormat('pt-BR', {style:'currency', currency:'BRL'}).format(d1.lost.val + d1.damaged.val)} para ${new Intl.NumberFormat('pt-BR', {style:'currency', currency:'BRL'}).format(d2.lost.val + d2.damaged.val)}.`;
-
-        document.getElementById('textDetalhamento').innerText = summary;
-        document.getElementById('comparisonResult').style.display = 'block';
-        lucide.createIcons();
-    });
-
-
-
-    // Ajustar os gráficos de linha do LSP-18 para mostrar Lost e Damaged separados
-    const originalRenderLsp18 = renderLsp18;
-    renderLsp18 = function() {
-        originalRenderLsp18(); // Chama o original para setup básico
-        
-        const theme = document.documentElement.getAttribute('data-theme');
-        const textColor = theme === 'light' ? '#6B7280' : '#A0AEC0';
-        const labelColor = theme === 'light' ? '#1A1A1A' : '#F8FAFC';
-        const months = ["1 - Janeiro", "2 - Fevereiro", "3 - Março", "4 - Abril", "5 - Maio"];
-        
-        const lostVols = [687, 440, 323, 208, 0];
-        const damagedVols = [172, 160, 144, 163, 56];
-        const lostVals = [45574.6, 36143.34, 25893.86, 15959.78, 0];
-        const damagedVals = [12090.03, 8285.24, 11512.76, 14080.54, 4406.25];
-
-        const commonLineOptions = {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { 
-                legend: { display: true, position: 'top', align: 'end', labels: { usePointStyle: true, font: { size: 11, weight: '600' }, color: textColor } },
-                datalabels: { display: true, anchor: 'end', align: 'top', color: labelColor, font: { weight: '700', size: 10 }, formatter: (v) => v > 0 ? v.toLocaleString('pt-BR') : '0' }
-            },
-            scales: { 
-                y: { beginAtZero: true, grace: '20%', ticks: { color: textColor }, grid: { borderDash: [5, 5] } },
-                x: { ticks: { color: textColor } }
-            }
-        };
-
-        if(charts.lsp18Volume) charts.lsp18Volume.destroy();
-        charts.lsp18Volume = new Chart(document.getElementById('lsp18VolumeChart'), {
-            type: 'line',
-            data: {
-                labels: months,
-                datasets: [
-                    { label: 'Lost', data: lostVols, borderColor: '#EE4D2D', backgroundColor: 'rgba(238, 77, 45, 0.1)', fill: true, tension: 0.3, pointRadius: 4 },
-                    { label: 'Damaged', data: damagedVols, borderColor: '#000', borderDash: [5, 2], tension: 0.3, pointRadius: 0 }
-                ]
-            },
-            options: commonLineOptions
-        });
-
-        if(charts.lsp18Value) charts.lsp18Value.destroy();
-        charts.lsp18Value = new Chart(document.getElementById('lsp18ValueChart'), {
-            type: 'line',
-            data: {
-                labels: months,
-                datasets: [
-                    { label: 'Damaged', data: damagedVals, borderColor: '#EE4D2D', backgroundColor: 'rgba(238, 77, 45, 0.1)', fill: true, tension: 0.3, pointRadius: 4 },
-                    { label: 'Lost', data: lostVals, borderColor: '#000', borderDash: [5, 2], tension: 0.3, pointRadius: 0 }
-                ]
-            },
-            options: {
-                ...commonLineOptions,
-                plugins: {
-                    ...commonLineOptions.plugins,
-                    datalabels: { ...commonLineOptions.plugins.datalabels, formatter: (v) => v > 0 ? v.toLocaleString('pt-BR', {minimumFractionDigits: 2}) : '0,00' }
-                }
-            }
-        });
-    };
-
-</script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0">
-    
-    
-    // DADOS PARA COMPARAÇÃO LSP-18 ATUALIZADOS
-    const monthlyDataLSP18 = {
-        "Janeiro": { lost: { vol: 687, val: 45574.6 }, damaged: { vol: 172, val: 12090.03 } },
-        "Fevereiro": { lost: { vol: 440, val: 36143.34 }, damaged: { vol: 160, val: 8285.24 } },
-        "Março": { lost: { vol: 323, val: 25893.86 }, damaged: { vol: 144, val: 11512.76 } },
-        "Abril": { lost: { vol: 208, val: 15959.78 }, damaged: { vol: 163, val: 14080.54 } },
-        "Maio": { lost: { vol: 0, val: 0 }, damaged: { vol: 56, val: 4406.25 } }
-    };
-
-    document.getElementById('btnComparar').addEventListener('click', function() {
-        const m1 = document.getElementById('filterMonth1').value;
-        const m2 = document.getElementById('filterMonth2').value;
-        if (!m1 || !m2 || m1 === m2) { showToast('Selecione dois meses diferentes', 'warning'); return; }
-
-        const d1 = monthlyDataLSP18[m1];
-        const d2 = monthlyDataLSP18[m2];
-
-        document.getElementById('cardBaseTitle').innerText = `${m1} (Base)`;
-        document.getElementById('cardBaseData').innerText = `Lost: ${d1.lost.vol.toLocaleString()} | Damaged: ${d1.damaged.vol.toLocaleString()}`;
-        
-        document.getElementById('cardCompTitle').innerText = `${m2} (Comparativo)`;
-        document.getElementById('cardCompData').innerText = `Lost: ${d2.lost.vol.toLocaleString()} | Damaged: ${d2.damaged.vol.toLocaleString()}`;
-
-        const getDeltaText = (v1, v2, isCur = false) => {
-            const d = v2 - v1;
-            const p = v1 !== 0 ? ((d / v1) * 100).toFixed(1) : (v2 > 0 ? 100 : 0);
-            const formatted = isCur ? new Intl.NumberFormat('pt-BR', {style:'currency', currency:'BRL'}).format(Math.abs(d)) : Math.abs(d).toLocaleString();
-            return (d >= 0 ? '+' : '-') + formatted + ' (' + (d >= 0 ? '+' : '') + p + '%)';
-        };
-
-        document.getElementById('valLostVol').innerText = getDeltaText(d1.lost.vol, d2.lost.vol);
-        document.getElementById('valLostVal').innerText = getDeltaText(d1.lost.val, d2.lost.val, true);
-        document.getElementById('valDamagedVol').innerText = getDeltaText(d1.damaged.vol, d2.damaged.vol);
-        document.getElementById('valDamagedVal').innerText = getDeltaText(d1.damaged.val, d2.damaged.val, true);
-
-        // SMART DETAILING TEXT
-        const diffLost = d2.lost.vol - d1.lost.vol;
-        const diffDamaged = d2.damaged.vol - d1.damaged.vol;
-        
-        let summary = `Na comparação entre ${m1} e ${m2}, houve uma `;
-        summary += diffLost <= 0 ? `redução de ${Math.abs(diffLost)} em Lost` : `elevação de ${diffLost} em Lost`;
-        summary += ` e uma `;
-        summary += diffDamaged <= 0 ? `queda de ${Math.abs(diffDamaged)} em Damaged.` : `subida de ${diffDamaged} em Damaged.`;
-        summary += ` O impacto financeiro total variou de ${new Intl.NumberFormat('pt-BR', {style:'currency', currency:'BRL'}).format(d1.lost.val + d1.damaged.val)} para ${new Intl.NumberFormat('pt-BR', {style:'currency', currency:'BRL'}).format(d2.lost.val + d2.damaged.val)}.`;
-
-        document.getElementById('textDetalhamento').innerText = summary;
-        document.getElementById('comparisonResult').style.display = 'block';
-        lucide.createIcons();
-    });
-
-
-
-    // Ajustar os gráficos de linha do LSP-18 para mostrar Lost e Damaged separados
-    const originalRenderLsp18 = renderLsp18;
-    renderLsp18 = function() {
-        originalRenderLsp18(); // Chama o original para setup básico
-        
-        const theme = document.documentElement.getAttribute('data-theme');
-        const textColor = theme === 'light' ? '#6B7280' : '#A0AEC0';
-        const labelColor = theme === 'light' ? '#1A1A1A' : '#F8FAFC';
-        const months = ["1 - Janeiro", "2 - Fevereiro", "3 - Março", "4 - Abril", "5 - Maio"];
-        
-        const lostVols = [687, 440, 323, 208, 0];
-        const damagedVols = [172, 160, 144, 163, 56];
-        const lostVals = [45574.6, 36143.34, 25893.86, 15959.78, 0];
-        const damagedVals = [12090.03, 8285.24, 11512.76, 14080.54, 4406.25];
-
-        const commonLineOptions = {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { 
-                legend: { display: true, position: 'top', align: 'end', labels: { usePointStyle: true, font: { size: 11, weight: '600' }, color: textColor } },
-                datalabels: { display: true, anchor: 'end', align: 'top', color: labelColor, font: { weight: '700', size: 10 }, formatter: (v) => v > 0 ? v.toLocaleString('pt-BR') : '0' }
-            },
-            scales: { 
-                y: { beginAtZero: true, grace: '20%', ticks: { color: textColor }, grid: { borderDash: [5, 5] } },
-                x: { ticks: { color: textColor } }
-            }
-        };
-
-        if(charts.lsp18Volume) charts.lsp18Volume.destroy();
-        charts.lsp18Volume = new Chart(document.getElementById('lsp18VolumeChart'), {
-            type: 'line',
-            data: {
-                labels: months,
-                datasets: [
-                    { label: 'Lost', data: lostVols, borderColor: '#EE4D2D', backgroundColor: 'rgba(238, 77, 45, 0.1)', fill: true, tension: 0.3, pointRadius: 4 },
-                    { label: 'Damaged', data: damagedVols, borderColor: '#000', borderDash: [5, 2], tension: 0.3, pointRadius: 0 }
-                ]
-            },
-            options: commonLineOptions
-        });
-
-        if(charts.lsp18Value) charts.lsp18Value.destroy();
-        charts.lsp18Value = new Chart(document.getElementById('lsp18ValueChart'), {
-            type: 'line',
-            data: {
-                labels: months,
-                datasets: [
-                    { label: 'Damaged', data: damagedVals, borderColor: '#EE4D2D', backgroundColor: 'rgba(238, 77, 45, 0.1)', fill: true, tension: 0.3, pointRadius: 4 },
-                    { label: 'Lost', data: lostVals, borderColor: '#000', borderDash: [5, 2], tension: 0.3, pointRadius: 0 }
-                ]
-            },
-            options: {
-                ...commonLineOptions,
-                plugins: {
-                    ...commonLineOptions.plugins,
-                    datalabels: { ...commonLineOptions.plugins.datalabels, formatter: (v) => v > 0 ? v.toLocaleString('pt-BR', {minimumFractionDigits: 2}) : '0,00' }
-                }
-            }
-        });
-    };
-
-</script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js">
-    
-    
-    // DADOS PARA COMPARAÇÃO LSP-18 ATUALIZADOS
-    const monthlyDataLSP18 = {
-        "Janeiro": { lost: { vol: 687, val: 45574.6 }, damaged: { vol: 172, val: 12090.03 } },
-        "Fevereiro": { lost: { vol: 440, val: 36143.34 }, damaged: { vol: 160, val: 8285.24 } },
-        "Março": { lost: { vol: 323, val: 25893.86 }, damaged: { vol: 144, val: 11512.76 } },
-        "Abril": { lost: { vol: 208, val: 15959.78 }, damaged: { vol: 163, val: 14080.54 } },
-        "Maio": { lost: { vol: 0, val: 0 }, damaged: { vol: 56, val: 4406.25 } }
-    };
-
-    document.getElementById('btnComparar').addEventListener('click', function() {
-        const m1 = document.getElementById('filterMonth1').value;
-        const m2 = document.getElementById('filterMonth2').value;
-        if (!m1 || !m2 || m1 === m2) { showToast('Selecione dois meses diferentes', 'warning'); return; }
-
-        const d1 = monthlyDataLSP18[m1];
-        const d2 = monthlyDataLSP18[m2];
-
-        document.getElementById('cardBaseTitle').innerText = `${m1} (Base)`;
-        document.getElementById('cardBaseData').innerText = `Lost: ${d1.lost.vol.toLocaleString()} | Damaged: ${d1.damaged.vol.toLocaleString()}`;
-        
-        document.getElementById('cardCompTitle').innerText = `${m2} (Comparativo)`;
-        document.getElementById('cardCompData').innerText = `Lost: ${d2.lost.vol.toLocaleString()} | Damaged: ${d2.damaged.vol.toLocaleString()}`;
-
-        const getDeltaText = (v1, v2, isCur = false) => {
-            const d = v2 - v1;
-            const p = v1 !== 0 ? ((d / v1) * 100).toFixed(1) : (v2 > 0 ? 100 : 0);
-            const formatted = isCur ? new Intl.NumberFormat('pt-BR', {style:'currency', currency:'BRL'}).format(Math.abs(d)) : Math.abs(d).toLocaleString();
-            return (d >= 0 ? '+' : '-') + formatted + ' (' + (d >= 0 ? '+' : '') + p + '%)';
-        };
-
-        document.getElementById('valLostVol').innerText = getDeltaText(d1.lost.vol, d2.lost.vol);
-        document.getElementById('valLostVal').innerText = getDeltaText(d1.lost.val, d2.lost.val, true);
-        document.getElementById('valDamagedVol').innerText = getDeltaText(d1.damaged.vol, d2.damaged.vol);
-        document.getElementById('valDamagedVal').innerText = getDeltaText(d1.damaged.val, d2.damaged.val, true);
-
-        // SMART DETAILING TEXT
-        const diffLost = d2.lost.vol - d1.lost.vol;
-        const diffDamaged = d2.damaged.vol - d1.damaged.vol;
-        
-        let summary = `Na comparação entre ${m1} e ${m2}, houve uma `;
-        summary += diffLost <= 0 ? `redução de ${Math.abs(diffLost)} em Lost` : `elevação de ${diffLost} em Lost`;
-        summary += ` e uma `;
-        summary += diffDamaged <= 0 ? `queda de ${Math.abs(diffDamaged)} em Damaged.` : `subida de ${diffDamaged} em Damaged.`;
-        summary += ` O impacto financeiro total variou de ${new Intl.NumberFormat('pt-BR', {style:'currency', currency:'BRL'}).format(d1.lost.val + d1.damaged.val)} para ${new Intl.NumberFormat('pt-BR', {style:'currency', currency:'BRL'}).format(d2.lost.val + d2.damaged.val)}.`;
-
-        document.getElementById('textDetalhamento').innerText = summary;
-        document.getElementById('comparisonResult').style.display = 'block';
-        lucide.createIcons();
-    });
-
-
-
-    // Ajustar os gráficos de linha do LSP-18 para mostrar Lost e Damaged separados
-    const originalRenderLsp18 = renderLsp18;
-    renderLsp18 = function() {
-        originalRenderLsp18(); // Chama o original para setup básico
-        
-        const theme = document.documentElement.getAttribute('data-theme');
-        const textColor = theme === 'light' ? '#6B7280' : '#A0AEC0';
-        const labelColor = theme === 'light' ? '#1A1A1A' : '#F8FAFC';
-        const months = ["1 - Janeiro", "2 - Fevereiro", "3 - Março", "4 - Abril", "5 - Maio"];
-        
-        const lostVols = [687, 440, 323, 208, 0];
-        const damagedVols = [172, 160, 144, 163, 56];
-        const lostVals = [45574.6, 36143.34, 25893.86, 15959.78, 0];
-        const damagedVals = [12090.03, 8285.24, 11512.76, 14080.54, 4406.25];
-
-        const commonLineOptions = {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { 
-                legend: { display: true, position: 'top', align: 'end', labels: { usePointStyle: true, font: { size: 11, weight: '600' }, color: textColor } },
-                datalabels: { display: true, anchor: 'end', align: 'top', color: labelColor, font: { weight: '700', size: 10 }, formatter: (v) => v > 0 ? v.toLocaleString('pt-BR') : '0' }
-            },
-            scales: { 
-                y: { beginAtZero: true, grace: '20%', ticks: { color: textColor }, grid: { borderDash: [5, 5] } },
-                x: { ticks: { color: textColor } }
-            }
-        };
-
-        if(charts.lsp18Volume) charts.lsp18Volume.destroy();
-        charts.lsp18Volume = new Chart(document.getElementById('lsp18VolumeChart'), {
-            type: 'line',
-            data: {
-                labels: months,
-                datasets: [
-                    { label: 'Lost', data: lostVols, borderColor: '#EE4D2D', backgroundColor: 'rgba(238, 77, 45, 0.1)', fill: true, tension: 0.3, pointRadius: 4 },
-                    { label: 'Damaged', data: damagedVols, borderColor: '#000', borderDash: [5, 2], tension: 0.3, pointRadius: 0 }
-                ]
-            },
-            options: commonLineOptions
-        });
-
-        if(charts.lsp18Value) charts.lsp18Value.destroy();
-        charts.lsp18Value = new Chart(document.getElementById('lsp18ValueChart'), {
-            type: 'line',
-            data: {
-                labels: months,
-                datasets: [
-                    { label: 'Damaged', data: damagedVals, borderColor: '#EE4D2D', backgroundColor: 'rgba(238, 77, 45, 0.1)', fill: true, tension: 0.3, pointRadius: 4 },
-                    { label: 'Lost', data: lostVals, borderColor: '#000', borderDash: [5, 2], tension: 0.3, pointRadius: 0 }
-                ]
-            },
-            options: {
-                ...commonLineOptions,
-                plugins: {
-                    ...commonLineOptions.plugins,
-                    datalabels: { ...commonLineOptions.plugins.datalabels, formatter: (v) => v > 0 ? v.toLocaleString('pt-BR', {minimumFractionDigits: 2}) : '0,00' }
-                }
-            }
-        });
-    };
-
-</script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js">
-    
-    
-    // DADOS PARA COMPARAÇÃO LSP-18 ATUALIZADOS
-    const monthlyDataLSP18 = {
-        "Janeiro": { lost: { vol: 687, val: 45574.6 }, damaged: { vol: 172, val: 12090.03 } },
-        "Fevereiro": { lost: { vol: 440, val: 36143.34 }, damaged: { vol: 160, val: 8285.24 } },
-        "Março": { lost: { vol: 323, val: 25893.86 }, damaged: { vol: 144, val: 11512.76 } },
-        "Abril": { lost: { vol: 208, val: 15959.78 }, damaged: { vol: 163, val: 14080.54 } },
-        "Maio": { lost: { vol: 0, val: 0 }, damaged: { vol: 56, val: 4406.25 } }
-    };
-
-    document.getElementById('btnComparar').addEventListener('click', function() {
-        const m1 = document.getElementById('filterMonth1').value;
-        const m2 = document.getElementById('filterMonth2').value;
-        if (!m1 || !m2 || m1 === m2) { showToast('Selecione dois meses diferentes', 'warning'); return; }
-
-        const d1 = monthlyDataLSP18[m1];
-        const d2 = monthlyDataLSP18[m2];
-
-        document.getElementById('cardBaseTitle').innerText = `${m1} (Base)`;
-        document.getElementById('cardBaseData').innerText = `Lost: ${d1.lost.vol.toLocaleString()} | Damaged: ${d1.damaged.vol.toLocaleString()}`;
-        
-        document.getElementById('cardCompTitle').innerText = `${m2} (Comparativo)`;
-        document.getElementById('cardCompData').innerText = `Lost: ${d2.lost.vol.toLocaleString()} | Damaged: ${d2.damaged.vol.toLocaleString()}`;
-
-        const getDeltaText = (v1, v2, isCur = false) => {
-            const d = v2 - v1;
-            const p = v1 !== 0 ? ((d / v1) * 100).toFixed(1) : (v2 > 0 ? 100 : 0);
-            const formatted = isCur ? new Intl.NumberFormat('pt-BR', {style:'currency', currency:'BRL'}).format(Math.abs(d)) : Math.abs(d).toLocaleString();
-            return (d >= 0 ? '+' : '-') + formatted + ' (' + (d >= 0 ? '+' : '') + p + '%)';
-        };
-
-        document.getElementById('valLostVol').innerText = getDeltaText(d1.lost.vol, d2.lost.vol);
-        document.getElementById('valLostVal').innerText = getDeltaText(d1.lost.val, d2.lost.val, true);
-        document.getElementById('valDamagedVol').innerText = getDeltaText(d1.damaged.vol, d2.damaged.vol);
-        document.getElementById('valDamagedVal').innerText = getDeltaText(d1.damaged.val, d2.damaged.val, true);
-
-        // SMART DETAILING TEXT
-        const diffLost = d2.lost.vol - d1.lost.vol;
-        const diffDamaged = d2.damaged.vol - d1.damaged.vol;
-        
-        let summary = `Na comparação entre ${m1} e ${m2}, houve uma `;
-        summary += diffLost <= 0 ? `redução de ${Math.abs(diffLost)} em Lost` : `elevação de ${diffLost} em Lost`;
-        summary += ` e uma `;
-        summary += diffDamaged <= 0 ? `queda de ${Math.abs(diffDamaged)} em Damaged.` : `subida de ${diffDamaged} em Damaged.`;
-        summary += ` O impacto financeiro total variou de ${new Intl.NumberFormat('pt-BR', {style:'currency', currency:'BRL'}).format(d1.lost.val + d1.damaged.val)} para ${new Intl.NumberFormat('pt-BR', {style:'currency', currency:'BRL'}).format(d2.lost.val + d2.damaged.val)}.`;
-
-        document.getElementById('textDetalhamento').innerText = summary;
-        document.getElementById('comparisonResult').style.display = 'block';
-        lucide.createIcons();
-    });
-
-
-
-    // Ajustar os gráficos de linha do LSP-18 para mostrar Lost e Damaged separados
-    const originalRenderLsp18 = renderLsp18;
-    renderLsp18 = function() {
-        originalRenderLsp18(); // Chama o original para setup básico
-        
-        const theme = document.documentElement.getAttribute('data-theme');
-        const textColor = theme === 'light' ? '#6B7280' : '#A0AEC0';
-        const labelColor = theme === 'light' ? '#1A1A1A' : '#F8FAFC';
-        const months = ["1 - Janeiro", "2 - Fevereiro", "3 - Março", "4 - Abril", "5 - Maio"];
-        
-        const lostVols = [687, 440, 323, 208, 0];
-        const damagedVols = [172, 160, 144, 163, 56];
-        const lostVals = [45574.6, 36143.34, 25893.86, 15959.78, 0];
-        const damagedVals = [12090.03, 8285.24, 11512.76, 14080.54, 4406.25];
-
-        const commonLineOptions = {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { 
-                legend: { display: true, position: 'top', align: 'end', labels: { usePointStyle: true, font: { size: 11, weight: '600' }, color: textColor } },
-                datalabels: { display: true, anchor: 'end', align: 'top', color: labelColor, font: { weight: '700', size: 10 }, formatter: (v) => v > 0 ? v.toLocaleString('pt-BR') : '0' }
-            },
-            scales: { 
-                y: { beginAtZero: true, grace: '20%', ticks: { color: textColor }, grid: { borderDash: [5, 5] } },
-                x: { ticks: { color: textColor } }
-            }
-        };
-
-        if(charts.lsp18Volume) charts.lsp18Volume.destroy();
-        charts.lsp18Volume = new Chart(document.getElementById('lsp18VolumeChart'), {
-            type: 'line',
-            data: {
-                labels: months,
-                datasets: [
-                    { label: 'Lost', data: lostVols, borderColor: '#EE4D2D', backgroundColor: 'rgba(238, 77, 45, 0.1)', fill: true, tension: 0.3, pointRadius: 4 },
-                    { label: 'Damaged', data: damagedVols, borderColor: '#000', borderDash: [5, 2], tension: 0.3, pointRadius: 0 }
-                ]
-            },
-            options: commonLineOptions
-        });
-
-        if(charts.lsp18Value) charts.lsp18Value.destroy();
-        charts.lsp18Value = new Chart(document.getElementById('lsp18ValueChart'), {
-            type: 'line',
-            data: {
-                labels: months,
-                datasets: [
-                    { label: 'Damaged', data: damagedVals, borderColor: '#EE4D2D', backgroundColor: 'rgba(238, 77, 45, 0.1)', fill: true, tension: 0.3, pointRadius: 4 },
-                    { label: 'Lost', data: lostVals, borderColor: '#000', borderDash: [5, 2], tension: 0.3, pointRadius: 0 }
-                ]
-            },
-            options: {
-                ...commonLineOptions,
-                plugins: {
-                    ...commonLineOptions.plugins,
-                    datalabels: { ...commonLineOptions.plugins.datalabels, formatter: (v) => v > 0 ? v.toLocaleString('pt-BR', {minimumFractionDigits: 2}) : '0,00' }
-                }
-            }
-        });
-    };
-
-</script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js">
-    
-    
-    // DADOS PARA COMPARAÇÃO LSP-18 ATUALIZADOS
-    const monthlyDataLSP18 = {
-        "Janeiro": { lost: { vol: 687, val: 45574.6 }, damaged: { vol: 172, val: 12090.03 } },
-        "Fevereiro": { lost: { vol: 440, val: 36143.34 }, damaged: { vol: 160, val: 8285.24 } },
-        "Março": { lost: { vol: 323, val: 25893.86 }, damaged: { vol: 144, val: 11512.76 } },
-        "Abril": { lost: { vol: 208, val: 15959.78 }, damaged: { vol: 163, val: 14080.54 } },
-        "Maio": { lost: { vol: 0, val: 0 }, damaged: { vol: 56, val: 4406.25 } }
-    };
-
-    document.getElementById('btnComparar').addEventListener('click', function() {
-        const m1 = document.getElementById('filterMonth1').value;
-        const m2 = document.getElementById('filterMonth2').value;
-        if (!m1 || !m2 || m1 === m2) { showToast('Selecione dois meses diferentes', 'warning'); return; }
-
-        const d1 = monthlyDataLSP18[m1];
-        const d2 = monthlyDataLSP18[m2];
-
-        document.getElementById('cardBaseTitle').innerText = `${m1} (Base)`;
-        document.getElementById('cardBaseData').innerText = `Lost: ${d1.lost.vol.toLocaleString()} | Damaged: ${d1.damaged.vol.toLocaleString()}`;
-        
-        document.getElementById('cardCompTitle').innerText = `${m2} (Comparativo)`;
-        document.getElementById('cardCompData').innerText = `Lost: ${d2.lost.vol.toLocaleString()} | Damaged: ${d2.damaged.vol.toLocaleString()}`;
-
-        const getDeltaText = (v1, v2, isCur = false) => {
-            const d = v2 - v1;
-            const p = v1 !== 0 ? ((d / v1) * 100).toFixed(1) : (v2 > 0 ? 100 : 0);
-            const formatted = isCur ? new Intl.NumberFormat('pt-BR', {style:'currency', currency:'BRL'}).format(Math.abs(d)) : Math.abs(d).toLocaleString();
-            return (d >= 0 ? '+' : '-') + formatted + ' (' + (d >= 0 ? '+' : '') + p + '%)';
-        };
-
-        document.getElementById('valLostVol').innerText = getDeltaText(d1.lost.vol, d2.lost.vol);
-        document.getElementById('valLostVal').innerText = getDeltaText(d1.lost.val, d2.lost.val, true);
-        document.getElementById('valDamagedVol').innerText = getDeltaText(d1.damaged.vol, d2.damaged.vol);
-        document.getElementById('valDamagedVal').innerText = getDeltaText(d1.damaged.val, d2.damaged.val, true);
-
-        // SMART DETAILING TEXT
-        const diffLost = d2.lost.vol - d1.lost.vol;
-        const diffDamaged = d2.damaged.vol - d1.damaged.vol;
-        
-        let summary = `Na comparação entre ${m1} e ${m2}, houve uma `;
-        summary += diffLost <= 0 ? `redução de ${Math.abs(diffLost)} em Lost` : `elevação de ${diffLost} em Lost`;
-        summary += ` e uma `;
-        summary += diffDamaged <= 0 ? `queda de ${Math.abs(diffDamaged)} em Damaged.` : `subida de ${diffDamaged} em Damaged.`;
-        summary += ` O impacto financeiro total variou de ${new Intl.NumberFormat('pt-BR', {style:'currency', currency:'BRL'}).format(d1.lost.val + d1.damaged.val)} para ${new Intl.NumberFormat('pt-BR', {style:'currency', currency:'BRL'}).format(d2.lost.val + d2.damaged.val)}.`;
-
-        document.getElementById('textDetalhamento').innerText = summary;
-        document.getElementById('comparisonResult').style.display = 'block';
-        lucide.createIcons();
-    });
-
-
-
-    // Ajustar os gráficos de linha do LSP-18 para mostrar Lost e Damaged separados
-    const originalRenderLsp18 = renderLsp18;
-    renderLsp18 = function() {
-        originalRenderLsp18(); // Chama o original para setup básico
-        
-        const theme = document.documentElement.getAttribute('data-theme');
-        const textColor = theme === 'light' ? '#6B7280' : '#A0AEC0';
-        const labelColor = theme === 'light' ? '#1A1A1A' : '#F8FAFC';
-        const months = ["1 - Janeiro", "2 - Fevereiro", "3 - Março", "4 - Abril", "5 - Maio"];
-        
-        const lostVols = [687, 440, 323, 208, 0];
-        const damagedVols = [172, 160, 144, 163, 56];
-        const lostVals = [45574.6, 36143.34, 25893.86, 15959.78, 0];
-        const damagedVals = [12090.03, 8285.24, 11512.76, 14080.54, 4406.25];
-
-        const commonLineOptions = {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { 
-                legend: { display: true, position: 'top', align: 'end', labels: { usePointStyle: true, font: { size: 11, weight: '600' }, color: textColor } },
-                datalabels: { display: true, anchor: 'end', align: 'top', color: labelColor, font: { weight: '700', size: 10 }, formatter: (v) => v > 0 ? v.toLocaleString('pt-BR') : '0' }
-            },
-            scales: { 
-                y: { beginAtZero: true, grace: '20%', ticks: { color: textColor }, grid: { borderDash: [5, 5] } },
-                x: { ticks: { color: textColor } }
-            }
-        };
-
-        if(charts.lsp18Volume) charts.lsp18Volume.destroy();
-        charts.lsp18Volume = new Chart(document.getElementById('lsp18VolumeChart'), {
-            type: 'line',
-            data: {
-                labels: months,
-                datasets: [
-                    { label: 'Lost', data: lostVols, borderColor: '#EE4D2D', backgroundColor: 'rgba(238, 77, 45, 0.1)', fill: true, tension: 0.3, pointRadius: 4 },
-                    { label: 'Damaged', data: damagedVols, borderColor: '#000', borderDash: [5, 2], tension: 0.3, pointRadius: 0 }
-                ]
-            },
-            options: commonLineOptions
-        });
-
-        if(charts.lsp18Value) charts.lsp18Value.destroy();
-        charts.lsp18Value = new Chart(document.getElementById('lsp18ValueChart'), {
-            type: 'line',
-            data: {
-                labels: months,
-                datasets: [
-                    { label: 'Damaged', data: damagedVals, borderColor: '#EE4D2D', backgroundColor: 'rgba(238, 77, 45, 0.1)', fill: true, tension: 0.3, pointRadius: 4 },
-                    { label: 'Lost', data: lostVals, borderColor: '#000', borderDash: [5, 2], tension: 0.3, pointRadius: 0 }
-                ]
-            },
-            options: {
-                ...commonLineOptions,
-                plugins: {
-                    ...commonLineOptions.plugins,
-                    datalabels: { ...commonLineOptions.plugins.datalabels, formatter: (v) => v > 0 ? v.toLocaleString('pt-BR', {minimumFractionDigits: 2}) : '0,00' }
-                }
-            }
-        });
-    };
-
-</script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 
     <style>
         :root {
@@ -1150,21 +460,22 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 20px;
             gap: 12px;
-            margin-bottom: 24px;
             flex-wrap: wrap;
         }
 
         .action-buttons {
             display: flex;
-            gap: 12px;
+            gap: 8px;
+            flex-wrap: wrap;
         }
 
         .btn-primary, .btn-secondary {
-            padding: 12px 20px;
             border: none;
+            padding: 10px 20px;
             border-radius: 10px;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 13px;
             cursor: pointer;
             display: flex;
@@ -1176,22 +487,17 @@
         .btn-primary {
             background: var(--shopee-orange);
             color: white;
+            box-shadow: 0 4px 12px rgba(238, 77, 45, 0.25);
+            display: none;
         }
-
-        .btn-primary:hover {
-            background: var(--shopee-orange-dark);
-            transform: translateY(-2px);
-        }
+        .btn-primary:hover { transform: translateY(-2px); background: var(--shopee-orange-dark); }
 
         .btn-secondary {
             background: var(--bg-tab-nav);
             color: var(--text-main);
             border: 1px solid var(--border-color);
         }
-
-        .btn-secondary:hover {
-            background: var(--border-color);
-        }
+        .btn-secondary:hover { background: var(--border-color); }
 
         /* FILTER BAR */
         .filter-bar {
@@ -1575,135 +881,6 @@
             margin: 8px 0;
         }
 
-        /* LSP-18 PROFESSIONAL STYLES */
-        .lsp18-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            margin-bottom: 32px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .lsp18-title-group {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .lsp18-title {
-            font-size: 28px;
-            font-weight: 800;
-            color: var(--text-main);
-            letter-spacing: -0.5px;
-        }
-
-        .lsp18-subtitle {
-            font-size: 14px;
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .lsp18-kpi-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 20px;
-            margin-bottom: 32px;
-        }
-
-        .lsp18-kpi-card {
-            background: var(--bg-card);
-            padding: 24px;
-            border-radius: 20px;
-            border: 1px solid var(--border-color);
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            min-height: 140px;
-        }
-
-        .lsp18-kpi-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-md);
-            border-color: var(--shopee-orange);
-        }
-
-        .lsp18-kpi-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            background: var(--shopee-orange);
-            opacity: 0.7;
-        }
-
-        .lsp18-kpi-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 16px;
-        }
-
-        .lsp18-kpi-label {
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .lsp18-kpi-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
-            background: var(--shopee-orange-light);
-            color: var(--shopee-orange);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .lsp18-kpi-value {
-            font-size: 32px;
-            font-weight: 900;
-            color: var(--text-main);
-            line-height: 1;
-            margin-bottom: 8px;
-        }
-
-        .lsp18-kpi-footer {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .lsp18-trend-up { color: var(--danger); }
-        .lsp18-trend-down { color: var(--success); }
-
-        .lsp18-table-card {
-            margin-top: 32px;
-        }
-
-        .status-badge {
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .status-improvement { background: #ECFDF5; color: #059669; }
-        .status-decline { background: #FEF2F2; color: #DC2626; }
-
         @media (max-width: 1024px) {
             .main-grid { grid-template-columns: 1fr; }
         }
@@ -1735,7 +912,6 @@
             .kpi-grid { grid-template-columns: 1fr; }
             .category-grid { grid-template-columns: 1fr 1fr; }
             .insights-grid { grid-template-columns: 1fr; }
-            .lsp18-kpi-grid { grid-template-columns: 1fr 1fr; }
             
             .card-container { padding: 16px; }
             .chart-wrapper { height: 250px; }
@@ -1752,268 +928,10 @@
 
         @media (max-width: 480px) {
             .category-grid { grid-template-columns: 1fr; }
-            .lsp18-kpi-grid { grid-template-columns: 1fr; }
             .welcome-title { font-size: 28px; }
             .welcome-btn { padding: 14px 32px; width: 90%; justify-content: center; }
             .toast-container { max-width: calc(100vw - 40px); right: 20px; left: 20px; }
         }
-    
-        /* COMPARISON SECTION STYLES */
-        .comparison-controls {
-            padding: 24px;
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 16px;
-            align-items: flex-end;
-            background: linear-gradient(135deg, rgba(238, 77, 45, 0.02) 0%, rgba(245, 158, 11, 0.02) 100%);
-        }
-        .form-group-custom { display: flex; flex-direction: column; gap: 8px; }
-        .form-group-custom label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-        .form-group-custom select, .form-group-custom button {
-            padding: 12px 14px; border-radius: 10px; border: 1.5px solid var(--border-color);
-            background: var(--bg-input); color: var(--text-main); font-size: 13px; font-weight: 600; cursor: pointer;
-        }
-        .form-group-custom button {
-            background: linear-gradient(135deg, var(--shopee-orange) 0%, #d73211 100%); color: white; border: none;
-            display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s;
-        }
-        .form-group-custom button:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(238, 77, 45, 0.3); }
-        .result-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; padding: 24px; }
-        .result-card { background: var(--bg-tab-nav); padding: 20px; border-radius: 12px; border-left: 4px solid var(--shopee-orange); transition: all 0.3s; }
-        .result-card.damaged { border-left-color: #F59E0B; }
-        .result-card-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
-        .result-card-value { font-size: 24px; font-weight: 800; color: var(--text-main); margin-bottom: 8px; }
-        .result-card-value.positive { color: #10B981; }
-        .result-card-value.negative { color: #EF4444; }
-        .result-card-pct { font-size: 12px; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 4px; }
-        .result-card-pct.positive { color: #10B981; }
-        .result-card-pct.negative { color: #EF4444; }
-        .details-section { padding: 24px; border-top: 1px solid var(--border-color); }
-        .details-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
-        .detail-item { background: var(--bg-card); padding: 14px; border-radius: 10px; border-left: 3px solid var(--shopee-orange); font-size: 12px; }
-        .detail-item.damaged { border-left-color: #F59E0B; }
-        .detail-item strong { display: block; color: var(--text-main); font-weight: 700; margin-bottom: 4px; }
-
-    
-        /* STYLES FOR COMPARISON CARDS (FROM IMAGE) */
-        .comparison-summary-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            padding: 24px;
-        }
-        .month-card {
-            background: #fff;
-            border-radius: 12px;
-            padding: 20px;
-            border-left: 5px solid var(--shopee-orange);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            position: relative;
-        }
-        .month-card.comparativo {
-            border-left-color: #EE4D2D;
-        }
-        .month-card-title {
-            font-size: 14px;
-            font-weight: 800;
-            color: #1A1A1A;
-            margin-bottom: 10px;
-        }
-        .month-card-data {
-            font-size: 13px;
-            color: #4B5563;
-            font-weight: 500;
-        }
-        .delta-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            padding: 0 24px 24px 24px;
-        }
-        .delta-card {
-            background: #F0F2F5;
-            border-radius: 12px;
-            padding: 16px;
-            border-left: 4px solid var(--shopee-orange);
-        }
-        .delta-card.damaged {
-            border-left-color: #F59E0B;
-        }
-        .delta-card-title {
-            font-size: 11px;
-            font-weight: 700;
-            color: #6B7280;
-            text-transform: uppercase;
-            margin-bottom: 12px;
-        }
-        .delta-card-line {
-            width: 20px;
-            height: 3px;
-            background: #EE4D2D;
-            margin-bottom: 12px;
-            border-radius: 2px;
-        }
-        .delta-card.damaged .delta-card-line {
-            background: #F59E0B;
-        }
-        .delta-card-value {
-            font-size: 14px;
-            font-weight: 700;
-            color: #1A1A1A;
-        }
-        .details-box {
-            margin: 0 24px 24px 24px;
-            padding: 16px;
-            background: #F0F2F5;
-            border-radius: 12px;
-            font-size: 13px;
-            color: #6B7280;
-            font-weight: 600;
-        }
-
-    
-        /* RADICAL SPACING - MAXIMUM SEPARATION */
-        .card-container {
-            margin-bottom: 100px;
-            margin-top: 40px;
-            padding-bottom: 40px;
-            border-bottom: 2px solid var(--border-color);
-        }
-        
-        .card-container:first-of-type {
-            margin-top: 0;
-        }
-        
-        .card-container:last-child {
-            margin-bottom: 40px;
-            border-bottom: none;
-        }
-
-        /* MOBILE RADICAL SPACING */
-        @media (max-width: 768px) {
-            .card-container {
-                margin-bottom: 80px;
-                margin-top: 30px;
-                padding-bottom: 30px;
-            }
-            
-            .comparison-controls {
-                grid-template-columns: 1fr;
-                gap: 16px;
-                padding: 20px;
-            }
-            
-            .comparison-summary-grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
-                padding: 20px;
-            }
-            
-            .delta-grid {
-                grid-template-columns: 1fr 1fr;
-                gap: 16px;
-                padding: 0 20px 20px 20px;
-            }
-            
-            .details-box {
-                margin: 0 20px 20px 20px;
-                padding: 16px;
-                font-size: 12px;
-            }
-            
-            .month-card {
-                padding: 18px;
-                margin-bottom: 12px;
-            }
-            
-            .month-card-title {
-                font-size: 13px;
-                margin-bottom: 8px;
-            }
-            
-            .month-card-data {
-                font-size: 12px;
-            }
-            
-            .delta-card {
-                padding: 14px;
-            }
-            
-            .delta-card-title {
-                font-size: 10px;
-                margin-bottom: 10px;
-            }
-            
-            .delta-card-value {
-                font-size: 13px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .card-container {
-                margin-bottom: 70px;
-                margin-top: 25px;
-                padding-bottom: 25px;
-            }
-            
-            .comparison-controls {
-                grid-template-columns: 1fr;
-                gap: 14px;
-                padding: 16px;
-            }
-            
-            .comparison-summary-grid {
-                grid-template-columns: 1fr;
-                gap: 16px;
-                padding: 16px;
-            }
-            
-            .delta-grid {
-                grid-template-columns: 1fr;
-                gap: 14px;
-                padding: 0 16px 16px 16px;
-            }
-            
-            .details-box {
-                margin: 0 16px 16px 16px;
-                padding: 14px;
-                font-size: 11px;
-                line-height: 1.6;
-            }
-            
-            .month-card {
-                padding: 16px;
-                margin-bottom: 10px;
-            }
-            
-            .month-card-title {
-                font-size: 12px;
-                margin-bottom: 8px;
-            }
-            
-            .month-card-data {
-                font-size: 11px;
-            }
-            
-            .delta-card {
-                padding: 12px;
-            }
-            
-            .delta-card-title {
-                font-size: 9px;
-                margin-bottom: 8px;
-            }
-            
-            .delta-card-value {
-                font-size: 12px;
-            }
-            
-            .delta-card-line {
-                width: 15px;
-                margin-bottom: 10px;
-            }
-        }
-
     </style>
 </head>
 <body>
@@ -2029,7 +947,7 @@
         </div>
         <div class="welcome-content">
             <h1 class="welcome-title">Bem-vindo ao Dashboard</h1>
-            <p class="welcome-subtitle">Monitoramento dos dash Carandiru </p>
+            <p class="welcome-subtitle">Monitoramento de Backlog dos Hubs Carandiru, Vila Guilherme e Guarulhos</p>
             <p class="welcome-description">Acompanhe em tempo real o desempenho dos hubs com análises detalhadas e insights acionáveis</p>
             <p class="welcome-developer">Desenvolvido por <strong>Emanuel Brendon</strong></p>
         </div>
@@ -2057,7 +975,7 @@
 <div class="container">
     <header>
         <div class="header-info">
-            <h1>Dashboard Carandiru </h1>
+            <h1>Dashboard Backlog</h1>
             <p><i data-lucide="calendar" size="14"></i> <span id="current-date">--/--/----</span> • <i data-lucide="map-pin" size="14"></i> Zona norte - SP</p>
         </div>
         <img src="https://upload.wikimedia.org/wikipedia/commons/f/fe/Shopee.svg" alt="Shopee" class="shopee-logo">
@@ -2073,12 +991,13 @@
     <nav class="tabs-nav">
         <button class="tab-button active" onclick="switchTab('overview', this)"><i data-lucide="layout-dashboard" size="18"></i> Geral</button>
         <button class="tab-button" onclick="switchTab('carandiru', this)"><i data-lucide="warehouse" size="18"></i> Carandiru</button>
-        <button id="btn-tab-lsp18" class="tab-button" onclick="switchTab('lsp18', this)"><i data-lucide="trending-up" size="18"></i> Evolução Operacional LSP-18</button>
+        <button class="tab-button" onclick="switchTab('vila', this)"><i data-lucide="warehouse" size="18"></i> Vila Guilherme</button>
+        <button class="tab-button" onclick="switchTab('guarulhos', this)"><i data-lucide="warehouse" size="18"></i> Guarulhos</button>
     </nav>
 
     <div class="action-bar">
         <div class="action-buttons">
-            <button id="btn-add-data" class="btn-primary" onclick="openAddModal()" style="display: none;"><i data-lucide="plus-circle" size="16"></i> Novo Registro</button>
+            <button id="btn-add-data" class="btn-primary" onclick="openAddModal()"><i data-lucide="plus-circle" size="16"></i> Novo Registro</button>
             <button class="btn-secondary" onclick="exportToCSV()"><i data-lucide="download" size="16"></i> Exportar CSV</button>
         </div>
     </div>
@@ -2162,256 +1081,112 @@
         </div>
     </div>
 
-    
-    <!-- TAB: LSP-18 -->
-    <div id="tab-lsp18" class="tab-content">
-        <div class="lsp18-header">
-            <div class="lsp18-title-group">
-                <div class="lsp18-title">Evolução Operacional LSP-18</div>
-                <div class="lsp18-subtitle"><i data-lucide="calendar" size="14"></i> Período: Janeiro - Maio 2026</div>
+    <!-- TAB: VILA -->
+    <div id="tab-vila" class="tab-content">
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <div class="kpi-title">Backlog Atual</div>
+                    <div class="kpi-icon"><i data-lucide="package" size="18"></i></div>
+                </div>
+                <div class="kpi-value" id="kpi-vila-total">0</div>
             </div>
-            <div class="action-buttons">
-                <button class="btn-secondary" onclick="window.print()"><i data-lucide="printer" size="16"></i> Imprimir Relatório</button>
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <div class="kpi-title">Média Semanal</div>
+                    <div class="kpi-icon"><i data-lucide="trending-up" size="18"></i></div>
+                </div>
+                <div class="kpi-value" id="kpi-vila-avg">0</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <div class="kpi-title">Maior Gargalo</div>
+                    <div class="kpi-icon"><i data-lucide="alert-triangle" size="18"></i></div>
+                </div>
+                <div class="kpi-value" id="kpi-vila-bottleneck" style="font-size: 18px;">--</div>
             </div>
         </div>
 
-        <div class="lsp18-kpi-grid">
-            <div class="lsp18-kpi-card">
-                <div class="lsp18-kpi-top">
-                    <div class="lsp18-kpi-label">Total Lost (Volume)</div>
-                    <div class="lsp18-kpi-icon"><i data-lucide="package-x" size="20"></i></div>
-                </div>
-                <div class="lsp18-kpi-value">1.658</div>
-                <div class="lsp18-kpi-footer">
-                    <span class="lsp18-trend-down"><i data-lucide="trending-down" size="14"></i> -12.5%</span>
-                    <span class="lsp18-kpi-period">vs. período anterior</span>
-                </div>
-            </div>
-            <div class="lsp18-kpi-card">
-                <div class="lsp18-kpi-top">
-                    <div class="lsp18-kpi-label">Total Lost (Valor)</div>
-                    <div class="lsp18-kpi-icon"><i data-lucide="dollar-sign" size="20"></i></div>
-                </div>
-                <div class="lsp18-kpi-value">R$ 123.571,58</div>
-                <div class="lsp18-kpi-footer">
-                    <span class="lsp18-trend-down"><i data-lucide="trending-down" size="14"></i> -8.2%</span>
-                    <span class="lsp18-kpi-period">vs. período anterior</span>
-                </div>
-            </div>
-            <div class="lsp18-kpi-card">
-                <div class="lsp18-kpi-top">
-                    <div class="lsp18-kpi-label">Total Damaged (Volume)</div>
-                    <div class="lsp18-kpi-icon"><i data-lucide="alert-circle" size="20"></i></div>
-                </div>
-                <div class="lsp18-kpi-value">1.044</div>
-                <div class="lsp18-kpi-footer">
-                    <span class="lsp18-trend-up"><i data-lucide="trending-up" size="14"></i> +4.1%</span>
-                    <span class="lsp18-kpi-period">vs. período anterior</span>
-                </div>
-            </div>
-            <div class="lsp18-kpi-card">
-                <div class="lsp18-kpi-top">
-                    <div class="lsp18-kpi-label">Total Damaged (Valor)</div>
-                    <div class="lsp18-kpi-icon"><i data-lucide="shield-alert" size="20"></i></div>
-                </div>
-                <div class="lsp18-kpi-value">R$ 50.374,82</div>
-                <div class="lsp18-kpi-footer">
-                    <span class="lsp18-trend-up"><i data-lucide="trending-up" size="14"></i> +2.3%</span>
-                    <span class="lsp18-kpi-period">vs. período anterior</span>
-                </div>
-            </div>
-        </div>
+        <div class="category-grid" id="category-cards-vila"></div>
 
         <div class="main-grid">
             <div class="card-container">
-                <div class="card-header"><div class="card-title"><i data-lucide="line-chart" size="16"></i> Evolução de Volume</div></div>
-                <div class="chart-wrapper"><canvas id="lsp18VolumeChart"></canvas></div>
+                <div class="card-header"><div class="card-title"><i data-lucide="pie-chart" size="16"></i> Mix de Backlog</div></div>
+                <div class="chart-wrapper"><canvas id="shareChartVila"></canvas></div>
             </div>
             <div class="card-container">
-                <div class="card-header"><div class="card-title"><i data-lucide="line-chart" size="16"></i> Evolução de Valor</div></div>
-                <div class="chart-wrapper"><canvas id="lsp18ValueChart"></canvas></div>
+                <div class="card-header"><div class="card-title"><i data-lucide="line-chart" size="16"></i> Evolução das Categorias</div></div>
+                <div class="chart-wrapper"><canvas id="categoryEvolutionChartVila"></canvas></div>
             </div>
         </div>
 
         <div class="card-container">
-            <div class="card-header"><div class="card-title"><i data-lucide="table" size="16"></i> Resumo Mensal</div></div>
+            <div class="card-header"><div class="card-title"><i data-lucide="history" size="16"></i> Histórico Completo</div></div>
             <div class="table-container">
                 <table>
                     <thead>
-                        <tr>
-                            <th>Mês</th>
-                            <th>Lost (Volume)</th>
-                            <th>Lost (Valor)</th>
-                            <th>Var. Lost (%)</th>
-                            <th>Damaged (Volume)</th>
-                            <th>Damaged (Valor)</th>
-                            <th>Total (Volume)</th>
-                            <th>Total (Valor)</th>
-                        </tr>
+                        <tr><th>Data</th><th>Dia</th><th>Amarelo</th><th>Erro</th><th>OnHold</th><th>Fleet</th><th>Office</th><th>LH Piso</th><th>No Show</th><th>Total</th></tr>
                     </thead>
-                    <tbody id="lsp18-table-body">
-                        <tr>
-                            <td class="td-bold">Janeiro</td>
-                            <td>687</td>
-                            <td>R$ 45,574.60</td>
-                            <td>—</td>
-                            <td>172</td>
-                            <td>R$ 12,090.03</td>
-                            <td>859</td>
-                            <td>R$ 57,664.63</td>
-                        </tr>
-                        <tr>
-                            <td class="td-bold">Fevereiro</td>
-                            <td>440</td>
-                            <td>R$ 36,143.34</td>
-                            <td>-35.95%</td>
-                            <td>160</td>
-                            <td>R$ 8,285.24</td>
-                            <td>600</td>
-                            <td>R$ 44,428.58</td>
-                        </tr>
-                        <tr>
-                            <td class="td-bold">Março</td>
-                            <td>323</td>
-                            <td>R$ 25,893.86</td>
-                            <td>-26.59%</td>
-                            <td>144</td>
-                            <td>R$ 11,512.76</td>
-                            <td>467</td>
-                            <td>R$ 37,406.62</td>
-                        </tr>
-                        <tr>
-                            <td class="td-bold">Abril</td>
-                            <td>208</td>
-                            <td>R$ 15,959.78</td>
-                            <td>-35.60%</td>
-                            <td>163</td>
-                            <td>R$ 14,080.54</td>
-                            <td>371</td>
-                            <td>R$ 30,040.32</td>
-                        </tr>
-                        <tr>
-                            <td class="td-bold">Maio</td>
-                            <td>0</td>
-                            <td>R$ 0.00</td>
-                            <td>-100.00%</td>
-                            <td>56</td>
-                            <td>R$ 4,406.25</td>
-                            <td>56</td>
-                            <td>R$ 4,406.25</td>
-                        </tr>
-                        <tr>
-                            <td class="td-total">Total</td>
-                            <td class="td-total">1658</td>
-                            <td class="td-total">R$ 123,571.58</td>
-                            <td class="td-total">—</td>
-                            <td class="td-total">695</td>
-                            <td class="td-total">R$ 50,374.82</td>
-                            <td class="td-total">2353</td>
-                            <td class="td-total">R$ 173,946.40</td>
-                        </tr>
-                    </tbody>
+                    <tbody id="table-vila"></tbody>
                 </table>
             </div>
-        
+        </div>
+    </div>
 
-        
-        
-        <!-- COMPARAÇÃO DE MESES - SEÇÃO MELHORADA -->
+<!-- TAB: VILA -->
+    <div id="tab-guarulhos" class="tab-content">
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <div class="kpi-title">Backlog Atual</div>
+                    <div class="kpi-icon"><i data-lucide="package" size="18"></i></div>
+                </div>
+                <div class="kpi-value" id="kpi-guarulhos-total">0</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <div class="kpi-title">Média Semanal</div>
+                    <div class="kpi-icon"><i data-lucide="trending-up" size="18"></i></div>
+                </div>
+                <div class="kpi-value" id="kpi-guarulhos-avg">0</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <div class="kpi-title">Maior Gargalo</div>
+                    <div class="kpi-icon"><i data-lucide="alert-triangle" size="18"></i></div>
+                </div>
+                <div class="kpi-value" id="kpi-guarulhos-bottleneck" style="font-size: 18px;">--</div>
+            </div>
+        </div>
+
+        <div class="category-grid" id="category-cards-guarulhos"></div>
+
+        <div class="main-grid">
+            <div class="card-container">
+                <div class="card-header"><div class="card-title"><i data-lucide="pie-chart" size="16"></i> Mix de Backlog</div></div>
+                <div class="chart-wrapper"><canvas id="shareChartGuarulhos"></canvas></div>
+            </div>
+            <div class="card-container">
+                <div class="card-header"><div class="card-title"><i data-lucide="line-chart" size="16"></i> Evolução das Categorias</div></div>
+                <div class="chart-wrapper"><canvas id="categoryEvolutionChartGuarulhos"></canvas></div>
+            </div>
+        </div>
+
         <div class="card-container">
-            <div class="card-header">
-                <div class="card-title"><i data-lucide="trending-up" size="16"></i> Comparação Entre Meses</div>
-            </div>
-            <div class="comparison-controls">
-                <div class="form-group-custom">
-                    <label>Mês Base</label>
-                    <select id="filterMonth1">
-                        <option value="">Selecione um mês</option>
-                        <option value="Janeiro">Janeiro</option>
-                        <option value="Fevereiro">Fevereiro</option>
-                        <option value="Março">Março</option>
-                        <option value="Abril">Abril</option>
-                        <option value="Maio">Maio</option>
-                    </select>
-                </div>
-                <div class="form-group-custom">
-                    <label>Mês Comparativo</label>
-                    <select id="filterMonth2">
-                        <option value="">Selecione um mês</option>
-                        <option value="Janeiro">Janeiro</option>
-                        <option value="Fevereiro">Fevereiro</option>
-                        <option value="Março">Março</option>
-                        <option value="Abril">Abril</option>
-                        <option value="Maio">Maio</option>
-                    </select>
-                </div>
-                <div class="form-group-custom">
-                    <button id="btnComparar">
-                        <i data-lucide="arrow-right" size="16"></i>Comparar
-                    </button>
-                </div>
-            </div>
-
-            <div id="comparisonResult" style="display: none;">
-                <div class="comparison-summary-grid">
-                    <div class="month-card">
-                        <div id="cardBaseTitle" class="month-card-title">Janeiro (Base)</div>
-                        <div id="cardBaseData" class="month-card-data">Lost: 0 | Damaged: 0</div>
-                    </div>
-                    <div class="month-card comparativo">
-                        <div id="cardCompTitle" class="month-card-title">Fevereiro (Comparativo)</div>
-                        <div id="cardCompData" class="month-card-data">Lost: 0 | Damaged: 0</div>
-                    </div>
-                </div>
-
-                <div class="delta-grid">
-                    <div class="delta-card">
-                        <div class="delta-card-title">Δ Lost (Volume)</div>
-                        <div class="delta-card-line"></div>
-                        <div id="valLostVol" class="delta-card-value">—</div>
-                    </div>
-                    <div class="delta-card">
-                        <div class="delta-card-title">Δ Lost (Valor)</div>
-                        <div class="delta-card-line"></div>
-                        <div id="valLostVal" class="delta-card-value">—</div>
-                    </div>
-                    <div class="delta-card damaged">
-                        <div class="delta-card-title">Δ Damaged (Volume)</div>
-                        <div class="delta-card-line"></div>
-                        <div id="valDamagedVol" class="delta-card-value">—</div>
-                    </div>
-                    <div class="delta-card damaged">
-                        <div class="delta-card-title">Δ Damaged (Valor)</div>
-                        <div class="delta-card-line"></div>
-                        <div id="valDamagedVal" class="delta-card-value">—</div>
-                    </div>
-                </div>
-
-                <div class="details-box">
-                    Detalhamento: <span id="textDetalhamento"></span>
-                </div>
+            <div class="card-header"><div class="card-title"><i data-lucide="history" size="16"></i> Histórico Completo</div></div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr><th>Data</th><th>Dia</th><th>Amarelo</th><th>Erro</th><th>OnHold</th><th>Fleet</th><th>Office</th><th>LH Piso</th><th>No Show</th><th>Total</th></tr>
+                    </thead>
+                    <tbody id="table-guarulhos"></tbody>
+                </table>
             </div>
         </div>
-
-                <div class="details-section">
-                    <div id="comparisonDetails" class="details-grid"></div>
-                </div>
-            </div>
-        </div>
-
-            
-                <div style="margin-top: 20px; padding: 16px; background: var(--bg-tab-nav); border-radius: 12px;">
-                    <div style="font-size: 12px; color: var(--text-muted); font-weight: 600; margin-bottom: 12px;">Detalhamento:</div>
-                    <div id="comparisonDetails" style="font-size: 13px; line-height: 1.8; color: var(--text-main);"></div>
-                </div>
-            </div>
-        </div>
-
-</div>
     </div>
 
     <footer>
-        <div>© 2026 Shopee • Dashboard </div>
+        <div>© 2026 Shopee • Dashboard de Backlog</div>
         <div class="footer-developer">Desenvolvido por Emanuel Brendon</div>
     </footer>
 </div>
@@ -2444,14 +1219,14 @@
             <i data-lucide="x" onclick="closeModal('addModal')" size="20"></i>
         </div>
         <form id="dataForm">
-                <div class="form-group">
-                    <label for="form-hub">Hub / Seção</label>
-                    <select id="form-hub" class="form-input">
-                        <option value="carandiru">Carandiru</option>
-                        <option value="vila-guilherme">Vila Guilherme</option>
-                        <option value="lsp18">Evolução LSP-18</option>
-                    </select>
-                </div>
+            <div class="form-group">
+                <label>Hub</label>
+                <select id="form-hub" class="form-input" required>
+                    <option value="carandiru">Carandiru</option>
+                    <option value="vila-guilherme">Vila Guilherme</option>
+                    <option value="guarulhos">Guarulhos</option>
+                </select>
+            </div>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px">
                 <div class="form-group"><label>Data</label><input type="text" id="form-data" class="form-input" placeholder="13/04" required></div>
                 <div class="form-group"><label>Dia</label><select id="form-dia" class="form-input"><option value="Segunda">Segunda</option><option value="Terça">Terça</option><option value="Quarta">Quarta</option><option value="Quinta">Quinta</option><option value="Sexta">Sexta</option><option value="Sábado">Sábado</option><option value="Domingo">Domingo</option></select></div>
@@ -2497,6 +1272,10 @@
             csv += `Carandiru,${item.data},${item.dia},${item.amarelo},${item.erro},${item.onhold},${item.fleet},${item.office},${item.lhpiso},${item.noshow},${item.total}\n`;
         });
         
+        dataVilaGuilherme.forEach(item => {
+            csv += `Vila Guilherme,${item.data},${item.dia},${item.amarelo},${item.erro},${item.onhold},${item.fleet},${item.office},${item.lhpiso},${item.noshow},${item.total}\n`;
+        });
+        
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -2509,7 +1288,7 @@
     // INSIGHTS CALCULATION
     function generateInsights() {
         const container = document.getElementById('insightsContainer');
-        const allData = [...dataCarandiru, ...dataVilaGuilherme];
+        const allData = [...dataCarandiru, ...dataVilaGuilherme, ...dataGuarulhos];
         
         if (allData.length < 2) {
             container.innerHTML = '';
@@ -2590,9 +1369,12 @@
     ];
 
     const initialDataVilaGuilherme = [];
+    const initialDataGuarulhos = [];
 
     let dataCarandiru = [...initialDataCarandiru];
     let dataVilaGuilherme = [...initialDataVilaGuilherme];
+                dataGuarulhos = [...initialDataGuarulhos];
+    let dataGuarulhos = [...initialDataGuarulhos];
     let firebaseRawData = {};
     let currentTab = 'overview';
     let charts = {};
@@ -2601,8 +1383,9 @@
     // MAPEAMENTO DE USUÁRIOS COM CONTROLE DE HUB
     const users = { 
         "emanuel.issa@shopee.com": { pass: "150311", hub: "vila" },
-        "usuario.carandiru@sho3pee.com": { pass: "shopee123", hub: "carandiru" },
-        "usuario.carandiru@shopee.com": { pass: "shopee123", hub: "all" }
+        "usuario.carandiru@shopee.com": { pass: "shopee123", hub: "carandiru" },
+        "usuario.guarulhos@shopee.com": { pass: "shopee123", hub: "guarulhos" },
+        "admin.hubs@shopee.com": { pass: "shopee2026", hub: "all" }
     };
     let currentUserHub = null;
 
@@ -2613,8 +1396,16 @@
     function switchTab(tab, element) {
         // Bloqueio de segurança: impede acessar via console ou clique se não tiver permissão
         if (currentUserHub !== 'all' && currentUserHub !== null) {
-            if (currentUserHub === 'carandiru' && tab !== 'carandiru' && tab !== 'lsp18') {
-                showToast('! Acesso restrito ao Hub Hub Carandiru', 'warning');
+            if (currentUserHub === 'vila' && tab !== 'vila') {
+                showToast('! Acesso restrito ao Hub Vila Guilherme', 'warning');
+                return;
+            }
+            if (currentUserHub === 'carandiru' && tab !== 'carandiru') {
+                showToast('! Acesso restrito ao Hub Carandiru', 'warning');
+                return;
+            }
+            if (currentUserHub === 'guarulhos' && tab !== 'guarulhos') {
+                showToast('! Acesso restrito ao Hub Guarulhos', 'warning');
                 return;
             }
         }
@@ -2642,13 +1433,7 @@
             // Atualiza interface de status
             document.getElementById('admin-status-box').innerHTML = `<i data-lucide="check-circle" size="14"></i> ${user.hub === 'all' ? 'Admin' : 'Hub ' + user.hub.toUpperCase()} (${email.split('@')[0]}) <button class="btn-login-trigger" onclick="location.reload()">Sair</button>`;
             document.getElementById('admin-status-box').className = 'admin-status admin-logged';
-            
-            // Exibe o botão de Novo Registro APENAS para o administrador geral
-            if (email === 'admin.hubs@shopee.com') {
-                document.getElementById('btn-add-data').style.display = 'flex';
-            } else {
-                document.getElementById('btn-add-data').style.display = 'none';
-            }
+            document.getElementById('btn-add-data').style.display = 'flex';
             
             // APLICA RESTRIÇÃO VISUAL NAS ABAS
             applyHubRestrictions(user.hub);
@@ -2659,11 +1444,14 @@
             
             // Redireciona para a aba permitida se necessário
             if (user.hub === 'vila') {
-                const btnVila = document.querySelector('[onclick*="switchTab(\'vila\')"');
+                const btnVila = document.querySelector('[onclick*="switchTab(\'vila\')"]');
                 if (btnVila) switchTab('vila', btnVila);
             } else if (user.hub === 'carandiru') {
                 const btnCar = document.querySelector('[onclick*="switchTab(\'carandiru\')"');
                 if (btnCar) switchTab('carandiru', btnCar);
+            } else if (user.hub === 'guarulhos') {
+                const btnGuar = document.querySelector('[onclick*="switchTab(\'guarulhos\')"');
+                if (btnGuar) switchTab('guarulhos', btnGuar);
             } else {
                 updateDashboard();
             }
@@ -2676,27 +1464,31 @@
 
     // FUNÇÃO PARA ESCONDER/MOSTRAR ABAS BASEADO NO HUB
     function applyHubRestrictions(hub) {
-        const btnOverview = document.querySelector('[onclick*="switchTab(\'overview\')"');
-        const btnCarandiru = document.querySelector('[onclick*="switchTab(\'carandiru\')"');
-        const btnVila = document.querySelector('[onclick*="switchTab(\'vila\')"');
-        const btnLsp18 = document.getElementById('btn-tab-lsp18');
+        const btnOverview = document.querySelector('[onclick*="switchTab(\'overview\')"]');
+        const btnCarandiru = document.querySelector('[onclick*="switchTab(\'carandiru\')"]');
+        const btnVila = document.querySelector('[onclick*="switchTab(\'vila\')"]');
 
         if (hub === 'vila') {
             if (btnOverview) btnOverview.style.display = 'none';
             if (btnCarandiru) btnCarandiru.style.display = 'none';
             if (btnVila) btnVila.style.display = 'flex';
-            if (btnLsp18) btnLsp18.style.display = 'flex';
         } else if (hub === 'carandiru') {
+            const btnGuarulhos = document.querySelector('[onclick*="switchTab(\'guarulhos\')"');
             if (btnOverview) btnOverview.style.display = 'none';
             if (btnVila) btnVila.style.display = 'none';
+            if (btnGuarulhos) btnGuarulhos.style.display = 'none';
             if (btnCarandiru) btnCarandiru.style.display = 'flex';
-            if (btnLsp18) btnLsp18.style.display = 'flex';
+        } else if (hub === 'guarulhos') {
+            const btnGuarulhos = document.querySelector('[onclick*="switchTab(\'guarulhos\')"');
+            if (btnOverview) btnOverview.style.display = 'none';
+            if (btnCarandiru) btnCarandiru.style.display = 'none';
+            if (btnVila) btnVila.style.display = 'none';
+            if (btnGuarulhos) btnGuarulhos.style.display = 'flex';
         } else {
-            // Admin ou Visitante vê a aba de evolução
+            // Admin vê tudo
             if (btnOverview) btnOverview.style.display = 'flex';
             if (btnCarandiru) btnCarandiru.style.display = 'flex';
             if (btnVila) btnVila.style.display = 'flex';
-            if (btnLsp18) btnLsp18.style.display = 'flex';
         }
     }
 
@@ -2711,6 +1503,9 @@
             selectHub.disabled = true;
         } else if (currentUserHub === 'carandiru') {
             selectHub.value = 'carandiru';
+            selectHub.disabled = true;
+        } else if (currentUserHub === 'guarulhos') {
+            selectHub.value = 'guarulhos';
             selectHub.disabled = true;
         } else {
             // Admin pode escolher qualquer hub
@@ -2740,7 +1535,7 @@
             renderOverview();
         } else if (currentTab === 'carandiru') renderCarandiru();
         else if (currentTab === 'vila') renderVila();
-        else if (currentTab === 'lsp18') renderLsp18();
+        else if (currentTab === 'guarulhos') renderGuarulhos();
     }
 
     function editValue(hub, date, field) {
@@ -2750,14 +1545,14 @@
         for (const key in firebaseRawData) {
             const item = firebaseRawData[key];
             const itemHub = item.hub || 'carandiru';
-            const targetHub = hub === 'carandiru' ? 'carandiru' : 'vila-guilherme';
+            const targetHub = hub === 'carandiru' ? 'carandiru' : (hub === 'guarulhos' ? 'guarulhos' : 'vila-guilherme');
             if (itemHub === targetHub && item.data === date) {
                 fbKey = key;
                 break;
             }
         }
 
-        const source = hub === 'carandiru' ? dataCarandiru : dataVilaGuilherme;
+        const source = hub === 'carandiru' ? dataCarandiru : (hub === 'guarulhos' ? dataGuarulhos : dataVilaGuilherme);
         const item = source.find(d => d.data === date);
         if (!item) return;
 
@@ -2777,7 +1572,7 @@
                     .catch(e => showToast('✗ Erro ao sincronizar', 'error'));
             } else if (db) {
                 const newItem = {...item};
-                newItem.hub = hub === 'carandiru' ? 'carandiru' : 'vila-guilherme';
+                newItem.hub = hub === 'carandiru' ? 'carandiru' : (hub === 'guarulhos' ? 'guarulhos' : 'vila-guilherme');
                 newItem[field] = val;
                 newItem.total = (newItem.amarelo || 0) + (newItem.erro || 0) + (newItem.onhold || 0) + 
                                (newItem.fleet || 0) + (newItem.office || 0) + (newItem.lhpiso || 0) + (newItem.noshow || 0);
@@ -2794,7 +1589,7 @@
     }
 
     function renderOverview() {
-        const allDates = [...new Set([...dataCarandiru.map(d => d.data), ...dataVilaGuilherme.map(d => d.data)])].sort((a,b) => {
+        const allDates = [...new Set([...dataCarandiru.map(d => d.data), ...dataVilaGuilherme.map(d => d.data), ...dataGuarulhos.map(d => d.data)])].sort((a,b) => {
             const [d1, m1] = a.split('/').map(Number);
             const [d2, m2] = b.split('/').map(Number);
             return (m1 * 100 + d1) - (m2 * 100 + d2);
@@ -2803,12 +1598,13 @@
         const syncData = (source) => allDates.map(date => {
             const found = source.find(d => d.data === date);
             if (found) return found;
-            const refDay = dataCarandiru.find(c => c.data === date) || dataVilaGuilherme.find(v => v.data === date);
+            const refDay = dataCarandiru.find(c => c.data === date) || dataVilaGuilherme.find(v => v.data === date) || dataGuarulhos.find(g => g.data === date);
             return { data: date, dia: refDay ? refDay.dia : "---", amarelo:0, erro:0, onhold:0, fleet:0, office:0, lhpiso:0, noshow: 0, total:0 };
         });
 
         const syncedCar = syncData(dataCarandiru);
         const syncedVila = syncData(dataVilaGuilherme);
+        const syncedGuarulhos = syncData(dataGuarulhos);
 
         const theme = document.documentElement.getAttribute('data-theme');
         const textColor = theme === 'light' ? '#6B7280' : '#A0AEC0';
@@ -2828,7 +1624,8 @@
                 labels: syncedCar.map(d => d.data), 
                 datasets: [ 
                     { label: 'Carandiru', data: syncedCar.map(d => d.total), backgroundColor: '#EE4D2D', borderRadius: 6 }, 
-                    
+                    { label: 'Vila Guilherme', data: syncedVila.map(d => d.total), backgroundColor: '#3B82F6', borderRadius: 6 },
+                    { label: 'Guarulhos', data: syncedGuarulhos.map(d => d.total), backgroundColor: '#10B981', borderRadius: 6 } 
                 ] 
             }, 
             options: { ...commonOptions, plugins: { ...commonOptions.plugins, legend: { display: true, position: 'top', labels: { color: textColor, font: { size: 11, weight: 600 }, boxWidth: 12, padding: 12 } }, datalabels: { display: false } } } 
@@ -2842,12 +1639,14 @@
         const w1Totals = cats.map(c => {
             const carSum = syncedCar.slice(0, 7).reduce((a, b) => a + (b[c] || 0), 0);
             const vilaSum = syncedVila.slice(0, 7).reduce((a, b) => a + (b[c] || 0), 0);
-            return carSum + vilaSum;
+            const guarSum = syncedGuarulhos.slice(0, 7).reduce((a, b) => a + (b[c] || 0), 0);
+            return carSum + vilaSum + guarSum;
         });
         const w2Totals = cats.map(c => {
             const carSum = syncedCar.slice(7).reduce((a, b) => a + (b[c] || 0), 0);
             const vilaSum = syncedVila.slice(7).reduce((a, b) => a + (b[c] || 0), 0);
-            return carSum + vilaSum;
+            const guarSum = syncedGuarulhos.slice(7).reduce((a, b) => a + (b[c] || 0), 0);
+            return carSum + vilaSum + guarSum;
         });
 
         if(charts.comparison) charts.comparison.destroy();
@@ -3074,140 +1873,86 @@
         });
     }
 
-    function renderLsp18() {
+function renderGuarulhos() {
         const theme = document.documentElement.getAttribute('data-theme');
         const textColor = theme === 'light' ? '#6B7280' : '#A0AEC0';
         const gridColor = theme === 'light' ? '#E8EAED' : '#2D3748';
         const labelColor = theme === 'light' ? '#1A1A1A' : '#F8FAFC';
 
-        // Processamento de dados dinâmicos do Firebase para LSP-18
-        const lsp18Data = Object.values(firebaseRawData).filter(i => i.hub === 'lsp18' || i.type === 'lsp18');
-        
-        // Se não houver dados no Firebase, usa dados estáticos como fallback
-        const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio'];
-        let volumes = [376, 480, 275, 211, 169];
-        let values = [57664.63, 100088.51, 56101.76, 30040.32, 24291.47];
+        const currentTotal = dataGuarulhos.length > 0 ? dataGuarulhos[dataGuarulhos.length - 1].total : 0;
+        const avgWeekly = dataGuarulhos.length > 0 ? Math.round(dataGuarulhos.reduce((a, b) => a + b.total, 0) / dataGuarulhos.length) : 0;
 
-        if (lsp18Data.length > 0) {
-            // Lógica para agrupar dados por mês se necessário
-            // Por enquanto, vamos assumir que os dados já vêm formatados ou usar os existentes
-            // mas a estrutura está pronta para receber `lsp18Data`
-        }
+        document.getElementById('kpi-guarulhos-total').innerText = currentTotal.toLocaleString();
+        document.getElementById('kpi-guarulhos-avg').innerText = avgWeekly.toLocaleString();
 
-        const volumeData = { labels: months, volumes: volumes };
-        const valueData = { labels: months, values: values };
+        const cats = ['amarelo', 'erro', 'onhold', 'fleet', 'office', 'lhpiso', 'noshow'];
+        const catLabels = ['Amarelo', 'Erro Op.', 'On Hold', 'Ret. Fleet', 'Office', 'LH Piso', 'No Show'];
+        const style = getComputedStyle(document.documentElement);
+        const catColors = cats.map(c => style.getPropertyValue(`--color-${c}`).trim());
+
+        const lastDay = dataGuarulhos.length > 0 ? dataGuarulhos[dataGuarulhos.length - 1] : {amarelo:0, erro:0, onhold:0, fleet:0, office:0, lhpiso:0, noshow: 0, total:0};
+        let maxVal = -1; let bottleneck = "";
+        const catCardsContainer = document.getElementById('category-cards-guarulhos');
+        catCardsContainer.innerHTML = '';
+        cats.forEach((c, i) => {
+            const val = lastDay[c] || 0;
+            if (val > maxVal) { maxVal = val; bottleneck = catLabels[i]; }
+            const isLhPiso = c === 'lhpiso' ? ' lhpiso-highlight' : '';
+            catCardsContainer.innerHTML += `<div class="cat-card${isLhPiso}" style="border-left-color: ${catColors[i]}"><span class="cat-name" style="color:${catColors[i]}">${catLabels[i]}</span><div class="cat-val">${val.toLocaleString()}</div><div class="cat-variation" style="color:${catColors[i]}">${lastDay.total > 0 ? Math.round((val/lastDay.total)*100) : 0}%</div></div>`;
+        });
+        document.getElementById('kpi-guarulhos-bottleneck').innerText = bottleneck;
 
         const commonOptions = { 
-            responsive: true, 
-            maintainAspectRatio: false, 
-            interaction: {
-                intersect: false,
-                mode: 'index',
-            },
-            plugins: { 
-                legend: { 
-                    display: true,
-                    position: 'top',
-                    align: 'end',
-                    labels: {
-                        usePointStyle: true,
-                        boxWidth: 6,
-                        font: { size: 11, weight: '600' },
-                        color: textColor
-                    }
-                }, 
-                tooltip: {
-                    backgroundColor: theme === 'light' ? '#fff' : '#1A1F2E',
-                    titleColor: labelColor,
-                    bodyColor: textColor,
-                    borderColor: gridColor,
-                    borderWidth: 1,
-                    padding: 12,
-                    boxPadding: 6,
-                    usePointStyle: true,
-                    callbacks: {
-                        label: function(context) {
-                            let label = context.dataset.label || '';
-                            if (label) label += ': ';
-                            if (context.parsed.y !== null) {
-                                label += context.parsed.y.toLocaleString('pt-BR');
-                            }
-                            return label;
-                        }
-                    }
-                },
-                datalabels: { 
-                    display: true, 
-                    anchor: 'end', 
-                    align: 'top', 
-                    color: labelColor, 
-                    offset: 8,
-                    font: { weight: '700', size: 11 }, 
-                    formatter: (v) => v > 0 ? v.toLocaleString('pt-BR') : '' 
-                } 
-            }, 
-            scales: { 
-                y: { 
-                    beginAtZero: true, 
-                    grace: '20%', 
-                    ticks: { 
-                        color: textColor, 
-                        font: { size: 11 },
-                        callback: (value) => value.toLocaleString('pt-BR')
-                    }, 
-                    grid: { color: gridColor, drawBorder: false, borderDash: [5, 5] } 
-                }, 
-                x: { 
-                    ticks: { color: textColor, font: { size: 11, weight: '500' } }, 
-                    grid: { display: false } 
-                } 
-            } 
+            responsive: true, maintainAspectRatio: false, 
+            plugins: { legend: { display: false }, datalabels: { display: true, anchor: 'end', align: 'top', color: labelColor, font: { weight: 'bold', size: 10 }, formatter: (v) => v > 0 ? v.toLocaleString() : '' } }, 
+            scales: { y: { beginAtZero: true, grace: '15%', ticks: { color: textColor, font: { size: 10 } }, grid: { color: gridColor, drawBorder: false } }, x: { ticks: { color: textColor, font: { size: 10 } }, grid: { display: false } } } 
         };
 
-        // Gráfico de Volume
-        if(charts.lsp18Volume) charts.lsp18Volume.destroy();
-        charts.lsp18Volume = new Chart(document.getElementById('lsp18VolumeChart'), { 
-            type: 'line', 
-            data: { 
-                labels: volumeData.labels, 
-                datasets: [{ 
-                    label: 'Total de Ocorrências (Volume)', 
-                    data: volumeData.volumes, 
-                    borderColor: '#EE4D2D', 
-                    backgroundColor: 'rgba(238, 77, 45, 0.1)',
-                    tension: 0.4, 
-                    pointRadius: 5, 
-                    pointHoverRadius: 7,
-                    pointBackgroundColor: '#EE4D2D',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    borderWidth: 3 
-                }] 
-            }, 
-            options: commonOptions
+        const shareData = cats.map(c => lastDay[c] || 0);
+        const totalShare = shareData.reduce((a,b)=>a+b,0);
+
+        if(charts.shareChartGuarulhos) charts.shareChartGuarulhos.destroy();
+        charts.shareChartGuarulhos = new Chart(document.getElementById('shareChartGuarulhos'), { 
+            type: 'doughnut', 
+            data: { labels: catLabels, datasets: [{ data: shareData, backgroundColor: catColors, borderWidth: 2, borderColor: theme === 'light' ? '#fff' : '#1A1F2E' }] }, 
+            options: { ...commonOptions, cutout: '65%', plugins: { ...commonOptions.plugins, legend: { display: true, position: 'bottom', labels: { color: textColor, boxWidth: 10, font: { size: 10, weight: 600 }, padding: 12 } }, datalabels: { color: labelColor, font: { weight: 'bold', size: 11 }, formatter: (v) => totalShare > 0 ? (v/totalShare*100).toFixed(0) + '%' : '0%' } } } 
         });
 
-        // Gráfico de Valor
-        if(charts.lsp18Value) charts.lsp18Value.destroy();
-        charts.lsp18Value = new Chart(document.getElementById('lsp18ValueChart'), { 
+        if(charts.evolutionChartGuarulhos) charts.evolutionChartGuarulhos.destroy();
+        charts.evolutionChartGuarulhos = new Chart(document.getElementById('categoryEvolutionChartGuarulhos'), { 
             type: 'line', 
             data: { 
-                labels: valueData.labels, 
-                datasets: [{ 
-                    label: 'Total de Ocorrências (Valor)', 
-                    data: valueData.values, 
-                    borderColor: '#EE4D2D', 
-                    backgroundColor: 'rgba(238, 77, 45, 0.1)',
+                labels: dataGuarulhos.map(d => d.data), 
+                datasets: cats.map((c, i) => ({ 
+                    label: catLabels[i], 
+                    data: dataGuarulhos.map(d => d[c]), 
+                    borderColor: catColors[i], 
+                    backgroundColor: catColors[i], 
                     tension: 0.4, 
-                    pointRadius: 5, 
-                    pointHoverRadius: 7,
-                    pointBackgroundColor: '#EE4D2D',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    borderWidth: 3 
-                }] 
+                    pointRadius: 4, 
+                    pointHoverRadius: 6, 
+                    borderWidth: 2.5 
+                })) 
             }, 
-            options: commonOptions
+            options: { ...commonOptions, plugins: { ...commonOptions.plugins, legend: { display: true, position: 'top', labels: { color: textColor, font: { size: 11, weight: 600 }, boxWidth: 12, padding: 12 } }, datalabels: { display: false } } } 
+        });
+
+        const bodyGuarulhos = document.getElementById('table-guarulhos');
+        bodyGuarulhos.innerHTML = '';
+        const editableClass = isAdmin ? ' admin-editable' : '';
+        [...dataGuarulhos].reverse().forEach(day => {
+            bodyGuarulhos.innerHTML += `<tr>
+                <td class="td-bold">${day.data}</td>
+                <td>${day.dia}</td>
+                <td class="${editableClass}" onclick="editValue('guarulhos', '${day.data}', 'amarelo')">${day.amarelo}</td>
+                <td class="${editableClass}" onclick="editValue('guarulhos', '${day.data}', 'erro')">${day.erro}</td>
+                <td class="${editableClass}" onclick="editValue('guarulhos', '${day.data}', 'onhold')">${day.onhold}</td>
+                <td class="${editableClass}" onclick="editValue('guarulhos', '${day.data}', 'fleet')">${day.fleet}</td>
+                <td class="${editableClass}" onclick="editValue('guarulhos', '${day.data}', 'office')">${day.office}</td>
+                <td class="${editableClass}" onclick="editValue('guarulhos', '${day.data}', 'lhpiso')">${day.lhpiso}</td>
+                <td class="${editableClass}" onclick="editValue('guarulhos', '${day.data}', 'noshow')">${day.noshow || 0}</td>
+                <td class="td-total">${day.total.toLocaleString()}</td>
+            </tr>`;
         });
     }
 
@@ -3219,19 +1964,23 @@
                 const items = Object.values(val);
                 const newCarandiru = items.filter(i => (i.hub === 'carandiru' || !i.hub));
                 const newVila = items.filter(i => i.hub === 'vila-guilherme');
+                const newGuarulhos = items.filter(i => i.hub === 'guarulhos');
                 
                 dataCarandiru = [...initialDataCarandiru, ...newCarandiru];
                 dataVilaGuilherme = [...initialDataVilaGuilherme, ...newVila];
+                dataGuarulhos = [...initialDataGuarulhos, ...newGuarulhos];
                 updateDashboard();
             } else {
                 dataCarandiru = [...initialDataCarandiru];
                 dataVilaGuilherme = [...initialDataVilaGuilherme];
+                dataGuarulhos = [...initialDataGuarulhos];
                 updateDashboard();
             }
         });
     } else {
         dataCarandiru = [...initialDataCarandiru];
         dataVilaGuilherme = [...initialDataVilaGuilherme];
+        dataGuarulhos = [...initialDataGuarulhos];
     }
 
     document.getElementById('dataForm').onsubmit = function(e) {
@@ -3260,7 +2009,7 @@
                 })
                 .catch(e => showToast('✗ Erro ao salvar', 'error'));
         } else {
-            if (hub === 'carandiru') dataCarandiru.push(newItem); else dataVilaGuilherme.push(newItem); 
+            if (hub === 'carandiru') dataCarandiru.push(newItem); else if (hub === 'guarulhos') dataGuarulhos.push(newItem); else dataVilaGuilherme.push(newItem); 
             updateDashboard(); 
             showToast('✓ Salvo localmente!', 'success'); 
             closeModal('addModal');
@@ -3276,217 +2025,6 @@
         updateDashboard();
         lucide.createIcons();
     };
-
-    // DADOS PARA COMPARAÇÃO
-    const lsp18MonthlyData = [{"mes": "Janeiro", "lost_vol": 687, "lost_val": 45574.6, "damaged_vol": 172, "damaged_val": 12090.03, "total_vol": 859, "total_val": 57664.63}, {"mes": "Fevereiro", "lost_vol": 440, "lost_val": 36143.340000000004, "damaged_vol": 160, "damaged_val": 8285.24, "total_vol": 600, "total_val": 44428.58}, {"mes": "Mar\u00e7o", "lost_vol": 323, "lost_val": 25893.86, "damaged_vol": 144, "damaged_val": 11512.76, "total_vol": 467, "total_val": 37406.62}, {"mes": "Abril", "lost_vol": 208, "lost_val": 15959.779999999999, "damaged_vol": 163, "damaged_val": 14080.539999999999, "total_vol": 371, "total_val": 30040.32}, {"mes": "Maio", "lost_vol": 0, "lost_val": 0.0, "damaged_vol": 56, "damaged_val": 4406.25, "total_vol": 56, "total_val": 4406.25}];
-
-    // Função para buscar dados de um mês
-    function getMonthData(monthName) {
-        return lsp18MonthlyData.find(m => m.mes === monthName);
-    }
-
-    // Função para calcular diferença
-    function calculateDifference(value1, value2) {
-        const diff = value2 - value1;
-        const pct = value1 !== 0 ? ((diff / value1) * 100).toFixed(2) : 0;
-        return { diff, pct };
-    }
-
-    // Função para formatar valor monetário
-    function formatCurrency(value) {
-        return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
-    }
-
-    // Função para formatar número
-    function formatNumber(value) {
-        return new Intl.NumberFormat('pt-BR').format(Math.round(value));
-    }
-
-    // Event listener para o botão de comparação
-    document.getElementById('btnComparar').addEventListener('click', function() {
-        const month1 = document.getElementById('filterMonth1').value;
-        const month2 = document.getElementById('filterMonth2').value;
-
-        if (!month1 || !month2) {
-            showToast('Selecione dois meses para comparar', 'warning');
-            return;
-        }
-
-        if (month1 === month2) {
-            showToast('Selecione meses diferentes', 'warning');
-            return;
-        }
-
-        const data1 = getMonthData(month1);
-        const data2 = getMonthData(month2);
-
-        if (!data1 || !data2) {
-            showToast('Dados não encontrados para um dos meses', 'error');
-            return;
-        }
-
-        // Calcular diferenças
-        const deltaLostVol = calculateDifference(data1.lost_vol, data2.lost_vol);
-        const deltaLostVal = calculateDifference(data1.lost_val, data2.lost_val);
-        const deltaDamagedVol = calculateDifference(data1.damaged_vol, data2.damaged_vol);
-        const deltaDamagedVal = calculateDifference(data1.damaged_val, data2.damaged_val);
-
-        // Atualizar elementos de resultado
-        const resultDiv = document.getElementById('comparisonResult');
-        
-        // Função auxiliar para colorir resultado
-        function getColorClass(value) {
-            return value >= 0 ? 'color: #10B981;' : 'color: #EF4444;';
-        }
-
-        document.getElementById('deltaLostVol').innerHTML = `<span style="${getColorClass(deltaLostVol.diff)}">${deltaLostVol.diff >= 0 ? '+' : ''}${formatNumber(deltaLostVol.diff)}</span>`;
-        document.getElementById('deltaLostVolPct').innerHTML = `<span style="${getColorClass(deltaLostVol.diff)}">${deltaLostVol.pct >= 0 ? '+' : ''}${deltaLostVol.pct}%</span>`;
-
-        document.getElementById('deltaLostVal').innerHTML = `<span style="${getColorClass(deltaLostVal.diff)}">${deltaLostVal.diff >= 0 ? '+' : ''}${formatCurrency(deltaLostVal.diff)}</span>`;
-        document.getElementById('deltaLostValPct').innerHTML = `<span style="${getColorClass(deltaLostVal.diff)}">${deltaLostVal.pct >= 0 ? '+' : ''}${deltaLostVal.pct}%</span>`;
-
-        document.getElementById('deltaDamagedVol').innerHTML = `<span style="${getColorClass(deltaDamagedVol.diff)}">${deltaDamagedVol.diff >= 0 ? '+' : ''}${formatNumber(deltaDamagedVol.diff)}</span>`;
-        document.getElementById('deltaDamagedVolPct').innerHTML = `<span style="${getColorClass(deltaDamagedVol.diff)}">${deltaDamagedVol.pct >= 0 ? '+' : ''}${deltaDamagedVol.pct}%</span>`;
-
-        document.getElementById('deltaDamagedVal').innerHTML = `<span style="${getColorClass(deltaDamagedVal.diff)}">${deltaDamagedVal.diff >= 0 ? '+' : ''}${formatCurrency(deltaDamagedVal.diff)}</span>`;
-        document.getElementById('deltaDamagedValPct').innerHTML = `<span style="${getColorClass(deltaDamagedVal.diff)}">${deltaDamagedVal.pct >= 0 ? '+' : ''}${deltaDamagedVal.pct}%</span>`;
-
-        // Atualizar detalhamento
-        const details = `
-            <strong>Período:</strong> ${month1} → ${month2}<br>
-            <strong>Lost:</strong> ${formatNumber(data1.lost_vol)} → ${formatNumber(data2.lost_vol)} unidades | R$ ${data1.lost_val.toFixed(2)} → R$ ${data2.lost_val.toFixed(2)}<br>
-            <strong>Damaged:</strong> ${formatNumber(data1.damaged_vol)} → ${formatNumber(data2.damaged_vol)} unidades | R$ ${data1.damaged_val.toFixed(2)} → R$ ${data2.damaged_val.toFixed(2)}<br>
-            <strong>Total:</strong> ${formatNumber(data1.total_vol)} → ${formatNumber(data2.total_vol)} ocorrências | R$ ${data1.total_val.toFixed(2)} → R$ ${data2.total_val.toFixed(2)}
-        `;
-        document.getElementById('comparisonDetails').innerHTML = details;
-
-        // Mostrar resultado
-        resultDiv.style.display = 'block';
-        resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    });
-
-    // Permitir Enter para comparar
-    document.getElementById('filterMonth2').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            document.getElementById('btnComparar').click();
-        }
-    });
-
-
-    
-    
-    // DADOS PARA COMPARAÇÃO LSP-18 ATUALIZADOS
-    const monthlyDataLSP18 = {
-        "Janeiro": { lost: { vol: 687, val: 45574.6 }, damaged: { vol: 172, val: 12090.03 } },
-        "Fevereiro": { lost: { vol: 440, val: 36143.34 }, damaged: { vol: 160, val: 8285.24 } },
-        "Março": { lost: { vol: 323, val: 25893.86 }, damaged: { vol: 144, val: 11512.76 } },
-        "Abril": { lost: { vol: 208, val: 15959.78 }, damaged: { vol: 163, val: 14080.54 } },
-        "Maio": { lost: { vol: 0, val: 0 }, damaged: { vol: 56, val: 4406.25 } }
-    };
-
-    document.getElementById('btnComparar').addEventListener('click', function() {
-        const m1 = document.getElementById('filterMonth1').value;
-        const m2 = document.getElementById('filterMonth2').value;
-        if (!m1 || !m2 || m1 === m2) { showToast('Selecione dois meses diferentes', 'warning'); return; }
-
-        const d1 = monthlyDataLSP18[m1];
-        const d2 = monthlyDataLSP18[m2];
-
-        document.getElementById('cardBaseTitle').innerText = `${m1} (Base)`;
-        document.getElementById('cardBaseData').innerText = `Lost: ${d1.lost.vol.toLocaleString()} | Damaged: ${d1.damaged.vol.toLocaleString()}`;
-        
-        document.getElementById('cardCompTitle').innerText = `${m2} (Comparativo)`;
-        document.getElementById('cardCompData').innerText = `Lost: ${d2.lost.vol.toLocaleString()} | Damaged: ${d2.damaged.vol.toLocaleString()}`;
-
-        const getDeltaText = (v1, v2, isCur = false) => {
-            const d = v2 - v1;
-            const p = v1 !== 0 ? ((d / v1) * 100).toFixed(1) : (v2 > 0 ? 100 : 0);
-            const formatted = isCur ? new Intl.NumberFormat('pt-BR', {style:'currency', currency:'BRL'}).format(Math.abs(d)) : Math.abs(d).toLocaleString();
-            return (d >= 0 ? '+' : '-') + formatted + ' (' + (d >= 0 ? '+' : '') + p + '%)';
-        };
-
-        document.getElementById('valLostVol').innerText = getDeltaText(d1.lost.vol, d2.lost.vol);
-        document.getElementById('valLostVal').innerText = getDeltaText(d1.lost.val, d2.lost.val, true);
-        document.getElementById('valDamagedVol').innerText = getDeltaText(d1.damaged.vol, d2.damaged.vol);
-        document.getElementById('valDamagedVal').innerText = getDeltaText(d1.damaged.val, d2.damaged.val, true);
-
-        // SMART DETAILING TEXT
-        const diffLost = d2.lost.vol - d1.lost.vol;
-        const diffDamaged = d2.damaged.vol - d1.damaged.vol;
-        
-        let summary = `Na comparação entre ${m1} e ${m2}, houve uma `;
-        summary += diffLost <= 0 ? `redução de ${Math.abs(diffLost)} em Lost` : `elevação de ${diffLost} em Lost`;
-        summary += ` e uma `;
-        summary += diffDamaged <= 0 ? `queda de ${Math.abs(diffDamaged)} em Damaged.` : `subida de ${diffDamaged} em Damaged.`;
-        summary += ` O impacto financeiro total variou de ${new Intl.NumberFormat('pt-BR', {style:'currency', currency:'BRL'}).format(d1.lost.val + d1.damaged.val)} para ${new Intl.NumberFormat('pt-BR', {style:'currency', currency:'BRL'}).format(d2.lost.val + d2.damaged.val)}.`;
-
-        document.getElementById('textDetalhamento').innerText = summary;
-        document.getElementById('comparisonResult').style.display = 'block';
-        lucide.createIcons();
-    });
-
-
-
-    // Ajustar os gráficos de linha do LSP-18 para mostrar Lost e Damaged separados
-    const originalRenderLsp18 = renderLsp18;
-    renderLsp18 = function() {
-        originalRenderLsp18(); // Chama o original para setup básico
-        
-        const theme = document.documentElement.getAttribute('data-theme');
-        const textColor = theme === 'light' ? '#6B7280' : '#A0AEC0';
-        const labelColor = theme === 'light' ? '#1A1A1A' : '#F8FAFC';
-        const months = ["1 - Janeiro", "2 - Fevereiro", "3 - Março", "4 - Abril", "5 - Maio"];
-        
-        const lostVols = [687, 440, 323, 208, 0];
-        const damagedVols = [172, 160, 144, 163, 56];
-        const lostVals = [45574.6, 36143.34, 25893.86, 15959.78, 0];
-        const damagedVals = [12090.03, 8285.24, 11512.76, 14080.54, 4406.25];
-
-        const commonLineOptions = {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { 
-                legend: { display: true, position: 'top', align: 'end', labels: { usePointStyle: true, font: { size: 11, weight: '600' }, color: textColor } },
-                datalabels: { display: true, anchor: 'end', align: 'top', color: labelColor, font: { weight: '700', size: 10 }, formatter: (v) => v > 0 ? v.toLocaleString('pt-BR') : '0' }
-            },
-            scales: { 
-                y: { beginAtZero: true, grace: '20%', ticks: { color: textColor }, grid: { borderDash: [5, 5] } },
-                x: { ticks: { color: textColor } }
-            }
-        };
-
-        if(charts.lsp18Volume) charts.lsp18Volume.destroy();
-        charts.lsp18Volume = new Chart(document.getElementById('lsp18VolumeChart'), {
-            type: 'line',
-            data: {
-                labels: months,
-                datasets: [
-                    { label: 'Lost', data: lostVols, borderColor: '#EE4D2D', backgroundColor: 'rgba(238, 77, 45, 0.1)', fill: true, tension: 0.3, pointRadius: 4 },
-                    { label: 'Damaged', data: damagedVols, borderColor: '#000', borderDash: [5, 2], tension: 0.3, pointRadius: 0 }
-                ]
-            },
-            options: commonLineOptions
-        });
-
-        if(charts.lsp18Value) charts.lsp18Value.destroy();
-        charts.lsp18Value = new Chart(document.getElementById('lsp18ValueChart'), {
-            type: 'line',
-            data: {
-                labels: months,
-                datasets: [
-                    { label: 'Damaged', data: damagedVals, borderColor: '#EE4D2D', backgroundColor: 'rgba(238, 77, 45, 0.1)', fill: true, tension: 0.3, pointRadius: 4 },
-                    { label: 'Lost', data: lostVals, borderColor: '#000', borderDash: [5, 2], tension: 0.3, pointRadius: 0 }
-                ]
-            },
-            options: {
-                ...commonLineOptions,
-                plugins: {
-                    ...commonLineOptions.plugins,
-                    datalabels: { ...commonLineOptions.plugins.datalabels, formatter: (v) => v > 0 ? v.toLocaleString('pt-BR', {minimumFractionDigits: 2}) : '0,00' }
-                }
-            }
-        });
-    };
-
 </script>
 </body>
 </html>
