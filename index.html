@@ -1258,8 +1258,16 @@
 
     let currentTab = 'overview';
     let isAdmin = false;
+    let userHub = 'none'; // 'all', 'vila', 'carandiru', 'gua'
     let charts = {};
     let firebaseRawData = {};
+
+    const USER_CREDENTIALS = {
+        "emanuel.issa@shopee.com": { pass: "150311", hub: "vila" },
+        "usuario.carandiru@shopee.com": { pass: "shopee123", hub: "carandiru" },
+        "admin.hubs@shopee.com": { pass: "shopee2026", hub: "all" },
+        "guarulhos@shopee.com": { pass: "Shopee123", hub: "gua" }
+    };
 
     let initialDataCarandiru = [
         {data: '06/04', dia: 'Segunda', amarelo: 150, erro: 40, onhold: 30, fleet: 20, office: 10, lhpiso: 5, noshow: 15, total: 270},
@@ -1457,15 +1465,38 @@
     }
 
     function handleLogin() {
-        const email = document.getElementById('login-email').value;
+        const email = document.getElementById('login-email').value.trim();
         const pass = document.getElementById('login-password').value;
-        if (email === 'admin@shopee.com' && pass === 'admin123') {
+        const user = USER_CREDENTIALS[email];
+
+        if (user && user.pass === pass) {
             isAdmin = true;
+            userHub = user.hub;
+            
             document.getElementById('adminStatus').className = 'admin-status admin-logged';
-            document.getElementById('adminStatus').innerHTML = '<i data-lucide="shield-check" size="14"></i> <span>Admin Conectado</span>';
+            document.getElementById('adminStatus').innerHTML = `<i data-lucide="shield-check" size="14"></i> <span>Conectado: ${userHub === 'all' ? 'Admin Geral' : 'Hub ' + userHub.charAt(0).toUpperCase() + userHub.slice(1)}</span>`;
+            
             document.getElementById('btnAddRecord').style.display = 'inline-flex';
+            
+            // Ajustar opções do select de hub no formulário baseado no acesso
+            const hubSelect = document.getElementById('form-hub');
+            if (userHub !== 'all') {
+                Array.from(hubSelect.options).forEach(opt => {
+                    if (userHub === 'vila' && opt.value === 'vila-guilherme') opt.selected = true;
+                    else if (userHub === opt.value) opt.selected = true;
+                    
+                    if (userHub === 'vila') {
+                        opt.disabled = (opt.value !== 'vila-guilherme');
+                    } else {
+                        opt.disabled = (opt.value !== userHub);
+                    }
+                });
+            } else {
+                Array.from(hubSelect.options).forEach(opt => opt.disabled = false);
+            }
+
             closeModal('loginModal');
-            showToast('✓ Login realizado com sucesso!', 'success');
+            showToast(`✓ Bem-vindo! Acesso liberado para Hub: ${userHub}`, 'success');
             updateDashboard();
         } else {
             document.getElementById('login-error').style.display = 'block';
@@ -1501,6 +1532,12 @@
 
     function editValue(hub, date, field) {
         if (!isAdmin) return;
+        
+        // Verificar permissão por hub
+        if (userHub !== 'all') {
+            if (userHub === 'vila' && hub !== 'vila') return showToast('Acesso negado para este Hub', 'error');
+            if (userHub !== 'vila' && userHub !== hub) return showToast('Acesso negado para este Hub', 'error');
+        }
 
         const source = hub === 'carandiru' ? dataCarandiru : hub === 'vila' ? dataVilaGuilherme : dataGua;
         const item = source.find(d => d.data === date);
